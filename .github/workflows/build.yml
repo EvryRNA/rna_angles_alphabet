@@ -1,0 +1,43 @@
+name: Lintage
+on: [pull_request]
+jobs:
+  pre_test_discord:
+    if: always()
+    uses: ./.github/workflows/discord.yml
+    with:
+      is_question: true
+    secrets:
+      webhook_url: ${{secrets.WEBHOOK_URL}}
+
+  python_lintage:
+    needs: pre_test_discord
+    runs-on: ubuntu-22.04
+    outputs:
+      complexity_score: ${{ steps.lintage_job.outputs.complexity_score }}
+      coverage_score: ${{ steps.lintage_job.outputs.coverage_score }}
+      documentation_score: ${{ steps.lintage_job.outputs.documentation_score }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Python Lintage and tests
+        uses: clementbernardd/workflow_python_tests@main
+        id: lintage_job
+        with:
+          WORKDIR: 'src'
+          MAX_LINE_LENGTH: 99
+          COMPLEXITY_SCORE: 2.5
+          COVERAGE_SCORE: 10
+          DOCUMENTATION_SCORE: 5
+
+  # Notification after the different tests
+  post_test_discord:
+    needs: python_lintage
+    if: ${{ always() }}
+    uses: ./.github/workflows/discord.yml
+    with:
+      is_success: ${{ contains(join(needs.*.result, ','), 'success') }}
+      complexity_score: ${{ needs.python_lintage.outputs.complexity_score }}
+      coverage_score: ${{ needs.python_lintage.outputs.coverage_score }}
+      documentation_score: ${{ needs.python_lintage.outputs.documentation_score }}
+    secrets:
+      webhook_url: ${{secrets.WEBHOOK_URL}}

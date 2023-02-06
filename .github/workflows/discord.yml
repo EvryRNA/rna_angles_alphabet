@@ -1,0 +1,135 @@
+on:
+  workflow_call:
+    inputs:
+      is_question:
+        required: false
+        type: boolean
+      is_success:
+        required: false
+        type: boolean
+      complexity_score:
+        required: false
+        type: string
+      coverage_score:
+        required: false
+        type: string
+      documentation_score:
+        required: false
+        type: string
+    secrets:
+      webhook_url:
+        required: true
+env:
+  TITLE_START: 'Workflow ${{github.event.head_commit.message}} has started'
+  TITLE_END: 'Workflow ${{github.event.head_commit.message}} has ended'
+  COLOR: "42239"
+  COlOR_SUCCESS: "64083"
+  COLOR_FAILURE: "16730698"
+  ICON: ':grey_question:'
+  ICON_SUCCESS: ':white_check_mark:'
+  ICON_FAILURE: ':grimacing:'
+jobs:
+  notif_question:
+    runs-on: ubuntu-22.04
+    if : ${{ inputs.is_question }}
+    steps:
+      - name: Send notif on the start of the tests
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.webhook_url }}
+          DISCORD_EMBEDS: '
+      [
+    {
+      "title": "${{env.TITLE_START}}",
+      "description": "Last commit: ${{github.event.head_commit.message}}",
+      "color": "${{env.COLOR}}",
+      "fields": [
+        {
+          "name": "Job Steps",
+          "value": "${{env.ICON}} Start of the tests"
+        },
+        {
+          "name": "Link:",
+          "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        }
+      ],
+      "footer": {
+        "text": "Triggered by ${{github.event.head_commit.author.name}}"
+      }
+    }
+  ]
+      '
+  notif_success:
+    runs-on: ubuntu-22.04
+    if : ${{ inputs.is_success && !inputs.is_question}}
+    steps:
+      - name: Send notif of the end of the tests for a success
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.webhook_url }}
+          DISCORD_EMBEDS: '
+        [
+      {
+        "title": "${{env.TITLE_END}} with success",
+        "description": "Last commit: ${{github.event.head_commit.message}}",
+        "color": "${{env.COlOR_SUCCESS}}",
+        "fields": [
+          {
+            "name": "Job Steps",
+            "value": "${{env.ICON_SUCCESS}} Tests have passed with success"
+          },
+          {
+          "name" : "Scores:",
+          "value": ":octagonal_sign: Complexity : ${{inputs.complexity_score}} \n
+           :detective: Coverage : ${{ inputs.coverage_score }}/100  \n 
+           :blue_book: Documentation : ${{inputs.documentation_score}}/10"
+          },
+          {
+            "name": "Link:",
+            "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+        ],
+        "footer": {
+          "text": "Triggered by ${{github.event.head_commit.author.name}}"
+        }
+      }
+    ]
+        '
+
+  notif_failure:
+    runs-on: ubuntu-22.04
+    if : ${{ !inputs.is_success && !inputs.is_question}}
+    steps:
+      - name: Send notif of the end of the tests for failure
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.webhook_url }}
+          DISCORD_EMBEDS: '
+        [
+      {
+        "title": "${{env.TITLE_END}} with failure",
+        "description": "Last commit: ${{github.event.head_commit.message}}",
+        "color": "14177041",
+        "fields": [
+          {
+            "name": "Job Steps",
+            "value": "${{env.ICON_FAILURE}} Tests have passed with failure"
+          },
+          {
+          "name" : "Scores:",
+          "value": ":octagonal_sign: Complexity : ${{inputs.complexity_score}} \n
+           :detective: Coverage : ${{ inputs.coverage_score }}/100  \n 
+           :blue_book: Documentation : ${{inputs.documentation_score}}/10"
+          },
+          {
+            "name": "Link:",
+            "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+        ],
+        "footer": {
+          "text": "Triggered by ${{github.event.head_commit.author.name}}"
+        }
+      }
+    ]
+        '
+
