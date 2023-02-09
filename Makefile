@@ -45,6 +45,7 @@ NAME="Clement"
 run:
 	$(PYTHON) src.return_hello --name=$(NAME)
 
-
+angle:
+	./src/angle -d example/Training_set_ex/ -l example/training_ex.txt -o example/result_ex -R -p -f -t
 
 
