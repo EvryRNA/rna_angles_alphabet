@@ -48,4 +48,5 @@ run:
 angle:
 	./src/angle -d example/Training_set_ex/ -l example/training_ex.txt -o example/result_ex -R -p -f -t
 
-
+max_angle:
+	./src/angle -d data/Training_set/ -l data/training.txt -o data/result -R -p -f -t
