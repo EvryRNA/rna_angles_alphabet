@@ -17,19 +17,41 @@ def recup_angle():
 
             if values[0] != "THETA" and values[0] != "NA" and values[1] != "NA":
                 filout.write(f"{float(values[1])},{float(values[0])}\n")
+    print("CSV file with angles values created")
 
     return
 
 
-def density2d():
-    data = pd.read_csv("data/angle.csv")
+def preprocess(dim):
+    data  = pd.read_csv("data/angle.csv")
+    x = np.array(data.ETA.values)
+    y = np.array(data.THETA.values)
+    
+    if dim == 2:
+        density2d(x, y)
 
-    X = np.array(data.ETA.values)
-    Y = np.array(data.THETA.values)
+    elif dim == 3:
+        angle_list= []
+        
+        for i in range(0, len(x)):
+            angle_list.append([x[i], y[i]])
 
+        kde = KernelDensity(kernel="gaussian", bandwidth=0.5).fit(angle_list)
+        score = kde.score_samples(angle_list)
+        z = np.array(score)
+        density3d(x, y, z)
+
+    else:
+        print("The dimension argument is wrong")
+    
+    return
+
+
+def density2d(x, y):
     fig, axes = plt.subplots(2, figsize=(10, 10))
-    sns.kdeplot(x=X, y=Y, cmap="rocket_r", fill=True, ax=axes[0])
-    sns.histplot(x=X, y=Y, cmap="rocket_r", thresh=0.5, bins=70, ax=axes[1])
+    sns.kdeplot(x=x, y=y, cmap="rocket_r", fill=True, ax=axes[0])
+    sns.histplot(x=x, y=y, cmap="rocket_r", thresh=0.5, bins=70, ax=axes[1])
+
     axes[0].set_title("KDE density")
     axes[1].set_title("Histogram density")
     fig.suptitle("2D density plot", fontsize=20)
@@ -39,21 +61,7 @@ def density2d():
     return
 
 
-def density3d():
-    angle = []
-    data = pd.read_csv("data/angle.csv")
-
-    for i in range(0, len(data.ETA.values)):
-        angle.append([data.ETA.values[i], data.THETA.values[i]])
-
-    x = np.array(data.ETA.values)
-    y = np.array(data.THETA.values)
-
-    kde = KernelDensity(kernel="gaussian", bandwidth=0.5).fit(angle)
-    score = kde.score_samples(angle)
-    z = np.array(score)
-    z[z > -8.5] = -8.5
-
+def density3d(x, y, z):
     fig, ax = plt.subplots(figsize=(9, 9), subplot_kw={"projection": "3d"})
     surf = ax.plot_trisurf(x, y, z, cmap=plt.cm.jet)
     plt.title("3D density plot", fontsize=20, loc="left")
@@ -81,8 +89,4 @@ if __name__ == "__main__":
     if not os.path.isfile("data/angle.csv"):
         recup_angle()
 
-    if dim == 2:
-        density2d()
-
-    elif dim == 3:
-        density3d()
+    preprocess(dim)
