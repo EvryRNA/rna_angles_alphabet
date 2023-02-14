@@ -1,59 +1,46 @@
-import argparse
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
-from sklearn.neighbors import KernelDensity
 
 
-def recup_angle():
+def csv_angle():
+    """
+    Function that takes the angle values found by angle.cpp
+            and put them in csv format
+    """
+
     with open("data/result.txt", "r") as filin, open("data/angle.csv", "w") as filout:
+        # Writing columns name
         filout.write("ETA,THETA\n")
 
+        # Splitting each line in separate values
         for line in filin:
             values = line.split()
 
+            # If both values eta and theta values are present, writing them in the csv
             if values[0] != "THETA" and values[0] != "NA" and values[1] != "NA":
                 filout.write(f"{float(values[1])},{float(values[0])}\n")
+
     print("CSV file with angles values created")
 
     return
 
 
-def preprocess(dim):
-    data  = pd.read_csv("data/angle.csv")
-    x = np.array(data.ETA.values)
-    y = np.array(data.THETA.values)
-    
-    if dim == 2:
-        density2d(x, y)
+def density2d(x: np.ndarray, y: np.ndarray):
+    """
+    Function that plot the KDE of the angle values in 2 dimensions
+    :param x, y: array matrices of the eta(x) and theta(y) angle values
+    """
 
-    elif dim == 3:
-        angle_list= []
-        
-        for i in range(0, len(x)):
-            angle_list.append([x[i], y[i]])
-
-        kde = KernelDensity(kernel="gaussian", bandwidth=0.5).fit(angle_list)
-        score = kde.score_samples(angle_list)
-        z = np.array(score)
-        density3d(x, y, z)
-
-    else:
-        print("The dimension argument is wrong")
-    
-    return
-
-
-def density2d(x, y):
+    # Plotting the kde values in 2D with two different representations
     fig, axes = plt.subplots(2, figsize=(10, 10))
     sns.kdeplot(x=x, y=y, cmap="rocket_r", fill=True, ax=axes[0])
     sns.histplot(x=x, y=y, cmap="rocket_r", thresh=0.5, bins=70, ax=axes[1])
 
     axes[0].set_title("KDE density")
-    axes[1].set_title("Histogram density")
+    axes[1].set_title("KDE histogram density")
     fig.suptitle("2D density plot", fontsize=20)
 
     plt.show()
@@ -61,12 +48,20 @@ def density2d(x, y):
     return
 
 
-def density3d(x, y, z):
+def density3d(x: np.ndarray, y: np.ndarray, z: np.ndarray):
+    """
+    Function that plot the KDE of the angle values in 3 dimensions
+    :param x, y: array matrices of the eta(x) and theta(y) angle values
+    :param z: array matrix of the kde score of each point
+    """
+
+    # Plotting the kde values in 3D with 'trisurf'
     fig, ax = plt.subplots(figsize=(9, 9), subplot_kw={"projection": "3d"})
     surf = ax.plot_trisurf(x, y, z, cmap=plt.cm.jet)
+
     plt.title("3D density plot", fontsize=20, loc="left")
-    ax.view_init(45, -115)
     fig.colorbar(surf, ax=ax, cmap=plt.cm.jet, aspect=3)
+    ax.view_init(45, -115)
 
     plt.show()
 
@@ -74,19 +69,5 @@ def density3d(x, y, z):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        choices=[2, 3],
-        required=True,
-        type=int,
-        action="store",
-        help="See the density plot in 2d or 3d",
-    )
-    args = parser.parse_args()
-    dim = args.d
-
     if not os.path.isfile("data/angle.csv"):
-        recup_angle()
-
-    preprocess(dim)
+        csv_angle()
