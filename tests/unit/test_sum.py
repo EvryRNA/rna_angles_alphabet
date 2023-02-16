@@ -4,7 +4,7 @@ import numpy as np
 
 import os
 
-from src.density import recup_angle
+from src.density_plot import csv_angle
 
 from src.code_example import sum_image
 
@@ -18,7 +18,7 @@ class SumTest(unittest.TestCase):
 
     def test_csv(self):
         if not os.path.isfile("data/angle.csv"):
-            recup_angle()
+            csv_angle()
             self.assertTrue(os.path.isfile("data/angle.csv"))
 
 
