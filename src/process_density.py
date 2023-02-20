@@ -8,7 +8,7 @@ from sklearn.neighbors import KernelDensity
 from density_plot import csv_angle, density2d, density3d
 
 
-def preprocess(dim: int, thresh=None):
+def preprocess(dim=0, thresh=None):
     """
     Function that process the data depending on the dimension argument
     :param dim: the number of dimensions of the final plot
@@ -49,9 +49,7 @@ def preprocess(dim: int, thresh=None):
         density3d(x, y, z)
 
     else:
-        print("The dimension argument is wrong")
-
-    return
+        return x, y
 
 
 if __name__ == "__main__":
