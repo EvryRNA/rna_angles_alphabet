@@ -5,7 +5,7 @@ export PATH_TO_UNIT_TESTS=tests/unit
 
 # Score thresholds
 export COVERAGE_SCORE=10
-export COMPLEXITY_SCORE=2.5
+export COMPLEXITY_SCORE=2.7
 export DOCUMENTATION_SCORE=5
 
 # Max line length for black
@@ -46,7 +46,7 @@ run:
 	$(PYTHON) src.return_hello --name=$(NAME)
 
 test_angle:
-	./src/angle -d example/Training_set_ex/ -l example/training_ex.txt -o example/result_ex -R -p -f -t
+	./src/angle -d example/training_set_ex/ -l example/training_ex.txt -o example/result_ex -R -p -f -t
 
 angle:
-	./src/angle -d data/Training_set/ -l data/training.txt -o data/result -R -p -f -t
+	./src/angle -d data/training_set/ -l data/training.txt -o data/result -R -p -f -t
