@@ -14,10 +14,19 @@ positions = np.vstack([x.ravel(), y.ravel()])
 
 values = stats.gaussian_kde(values, bw_method="scott")
 
-z = np.log(values(positions))
+z = values(positions)
 
 mean = np.mean(z)
 std = np.std(z)
+index = []
+
+for j in range(0, len(z)):
+    if z[j] < (mean + std):
+        index.append(j)
+
+x = np.delete(x, index)
+y = np.delete(y, index)
+z = np.delete(z, index)
 
 # breakpoint()
 
