@@ -14,18 +14,12 @@ positions = np.vstack([x.ravel(), y.ravel()])
 
 values = stats.gaussian_kde(values, bw_method="scott")
 
-z = values(positions)
+z = np.log(values(positions))
 
-index =  []
-for i in range(0, len(z)):
-    z[i] = z[i]*10000
-    # if z[i] > 0.15:
-    #     index.append(i)
+mean = np.mean(z)
+std = np.std(z)
 
-x = np.delete(x, index)
-y = np.delete(y, index)
-z = np.delete(z, index)
-
+# breakpoint()
 
 fig, ax = plt.subplots(figsize=(9, 9), subplot_kw={"projection": "3d"})
 surf = ax.plot_trisurf(x, y, z, cmap=plt.cm.jet)
