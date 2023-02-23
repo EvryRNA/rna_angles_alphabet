@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def recup_angle():
+def get_angle():
 	eta, theta, angles = [], [], []
 
 	with open("data/result.txt", "r") as filin:
