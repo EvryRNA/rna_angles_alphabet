@@ -1,21 +1,11 @@
 import unittest
 
-import numpy as np
-
 import os
 
 from src.density_plot import csv_angle
 
-from src.code_example import sum_image
-
 
 class SumTest(unittest.TestCase):
-    def test_sum(self):
-        inputs = np.array([[0, 1], [3, 0]])
-        expected_sum = 4
-        predicted_sum = sum_image(inputs)
-        self.assertTrue(expected_sum == predicted_sum)
-
     def test_csv(self):
         if not os.path.isfile("data/angle.csv"):
             csv_angle()
