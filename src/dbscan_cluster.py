@@ -15,7 +15,7 @@ def dbscan():
 		angles[i,0] = x[i]
 		angles[i,1] = y[i] 
 
-	model = DBSCAN(eps=5, min_samples=8)
+	model = DBSCAN(eps=5, min_samples=10)
 	cluster = model.fit(angles)
 	labels = cluster.fit_predict(angles)
 
@@ -30,11 +30,11 @@ def plot_cluster(data, label):
 		filter = f"label{i} = data[label == {i}]"
 		exec(filter)
 		if i == 0:
-			scatter = f"plt.scatter(label{i}[:,0], label{i}[:,1], 1, color = 'w')"
+			scatter = f"plt.scatter(label{i}[:,0], label{i}[:,1], 2, color = 'w')"
 			exec(scatter)
 		else:
 			c = random.choice(list(colors.keys()))
-			scatter = f"plt.scatter(label{i}[:,0], label{i}[:,1], 1, color = '{colors[c]}')"
+			scatter = f"plt.scatter(label{i}[:,0], label{i}[:,1], 2, color = '{colors[c]}')"
 			exec(scatter)
 
 	plt.title("η-θ conformational space")
@@ -45,6 +45,7 @@ def plot_cluster(data, label):
 	plt.yticks(np.arange(0, 361, 36))
 	print("DBscan clustering done")
 	plt.show()
+
 
 if __name__ == '__main__':
 	 dbscan()
