@@ -21,7 +21,7 @@ def get_angle():
 
 def plot_angle():
 	eta, theta = [], []
-	tab_angle = recup_angle()
+	tab_angle = get_angle()
 
 	for i in range(0, len(tab_angle)):
 		eta.append(tab_angle[i][0])

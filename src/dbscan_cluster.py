@@ -4,22 +4,35 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-from process_density import preprocess
+
+def recup_angle():
+	eta, theta, list_angle = [], [], []
+
+	with open("data/result.txt", "r") as filin:
+		for line in filin:
+			values = line.split()
+			if values[0] != "THETA" and values[0] != "NA" and values[1] != "NA":
+				theta.append(float(values[0]))
+				eta.append(float(values[1]))
+
+	for i in range(0, len(eta)):
+		list_angle.append([eta[i], theta[i]])
+
+	dbscan(list_angle)
+
+	return
 
 
-def dbscan():
-	x, y = preprocess()
-	angles = np.empty((len(x), 2))
-
-	for i in range(0, len(x)):
-		angles[i,0] = x[i]
-		angles[i,1] = y[i] 
-
+def dbscan(list_angle):
+	angles = np.array(list_angle)
 	model = DBSCAN(eps=5, min_samples=10)
 	cluster = model.fit(angles)
 	labels = cluster.fit_predict(angles)
 
+	print("DBSCAN clustering done, number of clusters :", len(np.unique(labels)))
 	plot_cluster(angles, labels+1)
+
+	return
 
 
 def plot_cluster(data, label):
@@ -48,4 +61,4 @@ def plot_cluster(data, label):
 
 
 if __name__ == '__main__':
-	 dbscan()
+	 recup_angle()

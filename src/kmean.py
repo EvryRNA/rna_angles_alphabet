@@ -28,7 +28,8 @@ def cluster_kmeans(list_angle):
 	cluster_model = KMeans(n_clusters = nb_clusters, n_init = "auto")
 	kmeans = cluster_model.fit(X)
 	labels = kmeans.fit_predict(X)
-	print("Clustering done")
+
+	print("Kmean clustering done")
 	plot_cluster(X, labels)
 
 	return
@@ -51,7 +52,6 @@ def plot_cluster(data, label):
 	plt.axis([0, 360, 0, 360])
 	plt.xticks(np.arange(0, 361, 36))
 	plt.yticks(np.arange(0, 361, 36))
-	print("Kmean clustering done")
 	plt.show()
 
 	return
