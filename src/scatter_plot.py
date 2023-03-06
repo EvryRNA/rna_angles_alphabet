@@ -89,7 +89,7 @@ def plot_cluster(data, label, nb_clusters, method):
 
 
 def get_colors(nb):
-	colors = ["k"]
+	colors = ["w"]
 	list_colors = mcolors.CSS4_COLORS
 
 	for i in range(1, nb):
