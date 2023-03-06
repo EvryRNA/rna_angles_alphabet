@@ -56,7 +56,7 @@ if __name__ == "__main__":
         type=int,
         choices=range(2, 7),
         default=7,
-        help="If kmeans is chosen, you can specify the number of clusters, default is 7",
+        help="If kmeans is chosen, specify the number of clusters, default is 7",
     )
     args = parser.parse_args()
     method = args.method
