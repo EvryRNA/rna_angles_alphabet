@@ -32,7 +32,7 @@ def hierarchical_cluster():
 
 def dbscan_cluster():
     X = get_angle()
-    model = DBSCAN(eps=5, min_samples=10)
+    model = DBSCAN(eps=6, min_samples=15)
     cluster_db = model.fit(X)
     labels = cluster_db.fit_predict(X)
     nb_clusters = len(np.unique(labels))
