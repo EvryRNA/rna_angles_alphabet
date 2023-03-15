@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 
 from scatter_plot import get_angle, plot_cluster
+from utils import save_model, load_model
 
 
 def kmeans_cluster(nb_clusters):
@@ -13,7 +14,9 @@ def kmeans_cluster(nb_clusters):
     labels = cluster_kmeans.fit_predict(X)
 
     print("Kmean clustering done, number of clusters :", nb_clusters)
-    plot_cluster(X, labels, nb_clusters, "k")
+
+    save_model("src/kmeans_model.pickle", cluster_kmeans)
+    # plot_cluster(X, labels, nb_clusters, "k")
 
     return
 
@@ -25,7 +28,9 @@ def hierarchical_cluster():
     labels = cluster_h.fit_predict(X)
 
     print("Hierarchical clustering done, number of clusters :", cluster_h.n_clusters_)
-    plot_cluster(X, labels, cluster_h.n_clusters_, "h")
+
+    save_model("src/hierarchical_model.pickle", cluster_h)
+    # plot_cluster(X, labels, cluster_h.n_clusters_, "h")
 
     return
 
@@ -38,7 +43,9 @@ def dbscan_cluster():
     nb_clusters = len(np.unique(labels))
 
     print("DBSCAN clustering done, number of clusters :", nb_clusters)
-    plot_cluster(X, labels + 1, nb_clusters, "d")
+
+    save_model("src/dbscan_model.pickle", cluster_db)
+    # plot_cluster(X, labels + 1, nb_clusters, "d")
 
     return
 

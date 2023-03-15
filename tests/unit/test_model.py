@@ -16,7 +16,7 @@ class ModelTest(unittest.TestCase):
         """
         Test the save model function
         """
-        save_model(None, path)
+        save_model(path, None)
         self.assertTrue(os.path.isfile(path))
         os.remove(path)
 
@@ -24,7 +24,7 @@ class ModelTest(unittest.TestCase):
         """
         Test if the model is being load properly
         """
-        save_model(None, path)
+        save_model(path, None)
         model_load = load_model(path)
         self.assertEqual(['test'], model_load)
         os.remove(path)

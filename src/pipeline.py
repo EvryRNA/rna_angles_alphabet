@@ -2,15 +2,15 @@ import argparse
 import os
 from typing import Optional
 
-from src.clustering_method import dbscan_cluster
+from clustering_method import dbscan_cluster
 
 
 class Pipeline:
     def __init__(self,
                 training_path: str,
                 testing_path: str,
-                nb_cluster: int = 2,
-                model_name: Optional[str] = None,
+                nb_cluster: int = 6,
+                model_name: Optional[str] = "dbscan",
                  ):
         """
         Initialise the different parameters
