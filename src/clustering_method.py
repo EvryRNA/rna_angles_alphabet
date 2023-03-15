@@ -3,8 +3,8 @@ import argparse
 import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 
-from scatter_plot import get_angle, plot_cluster
-from utils import save_model, load_model
+from src.scatter_plot import get_angle, plot_cluster
+from src.utils import save_model, load_model
 
 
 def kmeans_cluster(nb_clusters):

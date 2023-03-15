@@ -1,8 +1,5 @@
-import os
 import pickle
 from typing import Any
-
-
 
 
 def save_model(path : str, model : Any):

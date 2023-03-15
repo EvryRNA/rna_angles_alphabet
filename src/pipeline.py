@@ -2,7 +2,7 @@ import argparse
 import os
 from typing import Optional
 
-from clustering_method import dbscan_cluster
+from src.clustering_method import dbscan_cluster
 
 
 class Pipeline:

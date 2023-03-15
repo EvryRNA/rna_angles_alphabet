@@ -24,9 +24,9 @@ class ModelTest(unittest.TestCase):
         """
         Test if the model is being load properly
         """
-        save_model(path, None)
+        save_model(path, "test")
         model_load = load_model(path)
-        self.assertEqual(['test'], model_load)
+        self.assertEqual("test", model_load)
         os.remove(path)
         # TODO : INFERENCE APRES FIT
         # model_load = load_model(path)
