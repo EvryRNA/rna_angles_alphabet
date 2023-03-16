@@ -1,14 +1,15 @@
 import argparse
 
 import numpy as np
+import pandas as pd
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 
-from src.scatter_plot import get_angle, plot_cluster
+from src.scatter_plot import plot_cluster
 from src.utils import save_model, load_model
 
 
-def kmeans_cluster(nb_clusters):
-    X = get_angle()
+def kmeans_cluster(X : np.array, nb_clusters : int):
+
     model = KMeans(n_clusters=nb_clusters, n_init="auto")
     cluster_kmeans = model.fit(X)
     labels = cluster_kmeans.fit_predict(X)
@@ -21,8 +22,8 @@ def kmeans_cluster(nb_clusters):
     return
 
 
-def hierarchical_cluster():
-    X = get_angle()
+def hierarchical_cluster(X : np.array):
+
     model = AgglomerativeClustering(n_clusters=None, linkage="ward", distance_threshold=2000)
     cluster_h = model.fit(X)
     labels = cluster_h.fit_predict(X)
@@ -35,8 +36,8 @@ def hierarchical_cluster():
     return
 
 
-def dbscan_cluster():
-    X = get_angle()
+def dbscan_cluster(X : np.array):
+
     model = DBSCAN(eps=8, min_samples=12)
     cluster_db = model.fit(X)
     labels = cluster_db.fit_predict(X)

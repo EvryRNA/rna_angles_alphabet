@@ -2,6 +2,7 @@ import argparse
 import os
 from typing import Optional
 
+from src.utils import get_angle, text_to_csv
 from src.clustering_method import dbscan_cluster
 
 
@@ -24,15 +25,20 @@ class Pipeline:
 
     def train(self):
         print(f'{self.training_path}')
+        os.system("src/c_code/angle -d data/training_set/ -l data/training.txt -o data/result_train -R -p -f -t")
+        text_to_csv("data/result_train.txt")
         return None
 
     def test(self):
         print(f"{self.testing_path}")
+        os.system("src/c_code/angle -d data/testing_set/ -l data/testing.txt -o data/result_test -R -p -f -t")
+        text_to_csv("data/result_test.txt")
         return None
 
     def fit_model(self, model_name: str):
+        X = get_angle("data/result_train.csv")
         if model_name == "dbscan":
-            dbscan_cluster()
+            dbscan_cluster(X)
 
     def preprocess(self, input_path: str):
         """

@@ -9,7 +9,7 @@ from scipy import stats
 import seaborn as sns
 
 
-def get_angle():
+def list_angle():
 	angle = []
 
 	data = pd.read_csv("data/angle.csv")
@@ -46,7 +46,7 @@ def get_angle():
 
 def raw_angle():
 	eta, theta = [], []
-	angle = get_angle()
+	angle = list_angle()
 
 	for i in range(0, len(angle)):
 		eta.append(angle[i][0])

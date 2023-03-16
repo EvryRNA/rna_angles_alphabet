@@ -46,7 +46,7 @@ run:
 	$(PYTHON) src.return_hello --name=$(NAME)
 
 test_angle:
-	./src/c_code/angle -d example/training_set_ex/ -l example/training_ex.txt -o example/result_ex -R -p -f -t
+	src/c_code/angle -d data/testing_set/ -l data/testing.txt -o data/result_test -R -p -f -t
 
-angle:
-	./src/c_code/angle -d data/training_set/ -l data/training.txt -o data/result -R -p -f -t
+train_angle:
+	src/c_code/angle -d data/training_set/ -l data/training.txt -o data/result_train -R -p -f -t
