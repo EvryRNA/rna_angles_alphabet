@@ -1,7 +1,8 @@
 import argparse
+import os
+from typing import Any
 
 import numpy as np
-import pandas as pd
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 
 from src.scatter_plot import plot_cluster
@@ -51,6 +52,15 @@ def dbscan_cluster(X : np.array):
     return
 
 
+def predict_labels(test : np.array, model_name : str):
+
+    predict_model = load_model(f"src/{model_name}_model.pickle")
+    labels = predict_model.fit_predict(test)
+    os.remove(f"src/{model_name}_model.pickle")
+
+    return labels
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -77,7 +87,7 @@ if __name__ == "__main__":
         hierarchical_cluster()
 
     elif method == "d":
-        dbscan_cluster()
+        dbscan_cluster(np.array([0,1],[1,0]))
 
     else:
         print("wrong method")

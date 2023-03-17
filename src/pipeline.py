@@ -2,8 +2,8 @@ import argparse
 import os
 from typing import Optional
 
-from src.utils import get_angle, text_to_csv
-from src.clustering_method import dbscan_cluster
+from src.utils import list_pdb, get_angle, text_to_csv
+from src.clustering_method import dbscan_cluster, predict_labels
 
 
 class Pipeline:
@@ -24,21 +24,35 @@ class Pipeline:
 
 
     def train(self):
+        list_pdb()
         print(f'{self.training_path}')
-        os.system("src/c_code/angle -d data/training_set/ -l data/training.txt -o data/result_train -R -p -f -t")
+        os.system("src/c_code/angle -d data/training_set/ -l data/training_set.txt -o data/result_train -R -p -f -t")
         text_to_csv("data/result_train.txt")
+        os.remove("data/training_set.txt")
         return None
+
 
     def test(self):
         print(f"{self.testing_path}")
-        os.system("src/c_code/angle -d data/testing_set/ -l data/testing.txt -o data/result_test -R -p -f -t")
+        os.system("src/c_code/angle -d data/testing_set/ -l data/testing_set.txt -o data/result_test -R -p -f -t")
         text_to_csv("data/result_test.txt")
+        os.remove("data/testing_set.txt")
         return None
+
 
     def fit_model(self, model_name: str):
         X = get_angle("data/result_train.csv")
         if model_name == "dbscan":
             dbscan_cluster(X)
+        return None
+
+
+    def get_labels(self, model_name: str):
+        X = get_angle("data/result_test.csv")
+        labels = predict_labels(X, model_name)
+        print(labels)
+        return None
+
 
     def preprocess(self, input_path: str):
         """
@@ -55,6 +69,7 @@ class Pipeline:
         self.train()
         self.fit_model(self.model_name)
         self.test()
+        self.get_labels(self.model_name)
 
     @staticmethod
     def get_arguments():
