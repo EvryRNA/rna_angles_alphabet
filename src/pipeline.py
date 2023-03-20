@@ -10,8 +10,8 @@ class Pipeline:
     def __init__(self,
                 training_path: str,
                 testing_path: str,
-                nb_cluster: int = 6,
-                model_name: Optional[str] = "dbscan",
+                nb_cluster: Optional[int] = 6,
+                model_name: str = "dbscan",
                  ):
         """
         Initialise the different parameters
@@ -85,6 +85,13 @@ class Pipeline:
             "--testing_path",
             dest="testing_path",
             type=str,
+             help="",
+        )
+        parser.add_argument(
+            "--method",
+            dest="model_name",
+            type=str,
+            default="dbscan",
              help="",
         )
         args = parser.parse_args()

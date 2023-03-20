@@ -56,7 +56,7 @@ def predict_labels(test : np.array, model_name : str):
 
     predict_model = load_model(f"src/{model_name}_model.pickle")
     labels = predict_model.fit_predict(test)
-    os.remove(f"src/{model_name}_model.pickle")
+    # os.remove(f"src/{model_name}_model.pickle")
 
     return labels
 
