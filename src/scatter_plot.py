@@ -83,13 +83,13 @@ def plot_cluster(data, label, nb_clusters, method):
 	plt.axis([0, 360, 0, 360])
 	plt.xticks(np.arange(0, 361, 36))
 	plt.yticks(np.arange(0, 361, 36))
-	plt.show()
+	plt.savefig(f"data/{method}_cluster.png")
 
 	return
 
 
 def get_colors(nb):
-	colors = ["w"]
+	colors = ["k"]
 	list_colors = mcolors.CSS4_COLORS
 
 	for i in range(1, nb):

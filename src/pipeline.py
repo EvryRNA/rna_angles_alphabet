@@ -2,7 +2,7 @@ import argparse
 import os
 from typing import Optional
 
-from src.utils import list_pdb, get_angle, text_to_csv
+from src.utils import list_pdb, get_angle, text_to_csv, labels_to_seq
 from src.clustering_method import dbscan_cluster, predict_labels
 
 
@@ -47,10 +47,11 @@ class Pipeline:
         return None
 
 
-    def get_labels(self, model_name: str):
+    def get_sequence(self, model_name: str):
         X = get_angle("data/result_test.csv")
         labels = predict_labels(X, model_name)
-        print(labels)
+        seq = labels_to_seq(labels)
+        print(seq)
         return None
 
 
@@ -69,7 +70,7 @@ class Pipeline:
         self.train()
         self.fit_model(self.model_name)
         self.test()
-        self.get_labels(self.model_name)
+        self.get_sequence(self.model_name)
 
     @staticmethod
     def get_arguments():

@@ -60,5 +60,18 @@ def load_model(path):
     return loaded_model
 
 
+def labels_to_seq(tab: np.array):
+    sequence = ""
+    list_structure = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+
+    for i in range(0, len(tab)):
+        if tab[i] == -1:
+            letter = "X"
+        else:
+            letter = list_structure[tab[i]]
+        sequence += letter
+
+    return sequence
+
 if __name__ == "__main__":
     a = 0
