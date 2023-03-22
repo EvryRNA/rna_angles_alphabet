@@ -8,7 +8,7 @@ from src.scatter_plot import plot_cluster
 from src.utils import save_model, load_model
 
 
-def kmeans_cluster(x : np.array, nb_clusters : int):
+def kmeans_cluster(x : np.array, nb_clusters : int, temp_dir : str):
     """
     Train a kmeans model on a dataset
     """
@@ -18,13 +18,13 @@ def kmeans_cluster(x : np.array, nb_clusters : int):
 
     print("Kmean clustering done, number of clusters :", nb_clusters)
 
-    save_model("tmp/kmeans_model.pickle", cluster_kmeans)
-    plot_cluster(x, labels, nb_clusters, "k")
+    save_model(f"{temp_dir}/kmeans_model.pickle", cluster_kmeans)
+    plot_cluster(x, labels, nb_clusters, "kmeans", temp_dir)
 
     return
 
 
-def hierarchical_cluster(x : np.array):
+def hierarchical_cluster(x : np.array, temp_dir : str):
     """
     Train a hierarchical model on a dataset
     """
@@ -34,13 +34,13 @@ def hierarchical_cluster(x : np.array):
 
     print("Hierarchical clustering done, number of clusters :", cluster_h.n_clusters_)
 
-    save_model("tmp/hierarchical_model.pickle", cluster_h)
-    plot_cluster(x, labels, cluster_h.n_clusters_, "h")
+    save_model(f"{temp_dir}/hierarchical_model.pickle", cluster_h)
+    plot_cluster(x, labels, cluster_h.n_clusters_, "hierarchical", temp_dir)
 
     return
 
 
-def dbscan_cluster(x : np.array):
+def dbscan_cluster(x : np.array, temp_dir : str):
     """
     Train a dbscan model on a dataset
     """
@@ -51,17 +51,17 @@ def dbscan_cluster(x : np.array):
 
     print("DBSCAN clustering done, number of clusters :", nb_clusters)
 
-    save_model("tmp/dbscan_model.pickle", cluster_db)
-    plot_cluster(x, labels + 1, nb_clusters, "d")
+    save_model(f"{temp_dir}/dbscan_model.pickle", cluster_db)
+    plot_cluster(x, labels + 1, nb_clusters, "dbscan", temp_dir)
 
     return
 
 
-def predict_labels(test : np.array, model_name : str):
+def predict_labels(test : np.array, model_name : str, temp_dir : str):
     """
     Load a model and predict the labels for a testing set
     """
-    predict_model = load_model(f"tmp/{model_name}_model.pickle")
+    predict_model = load_model(f"{temp_dir}/{model_name}_model.pickle")
     labels = predict_model.fit_predict(test)
 
     return labels

@@ -30,7 +30,7 @@ def raw_angle(path):
 	return
 
 
-def plot_cluster(data, label, nb_clusters, method):
+def plot_cluster(data, label, nb_clusters, method, temp_dir):
 	"""
 	Plot the results of a clustering method
 	"""
@@ -52,7 +52,7 @@ def plot_cluster(data, label, nb_clusters, method):
 	plt.axis([0, 360, 0, 360])
 	plt.xticks(np.arange(0, 361, 36))
 	plt.yticks(np.arange(0, 361, 36))
-	plt.savefig(f"tmp/{method}_cluster.png")
+	plt.savefig(f"{temp_dir}/{method}_cluster.png")
 
 	return
 

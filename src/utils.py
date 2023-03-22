@@ -5,11 +5,11 @@ import pickle
 from typing import Any
 
 
-def list_pdb(path: str, data: str):
+def list_pdb(path: str, data: str, temp_dir: str):
     """
     Write the list of pdb files in a directory in a txt file
     """
-    with open(f"tmp/{data}_set.txt", 'w') as file:
+    with open(f"{temp_dir}/{data}_set.txt", 'w') as file:
         for filename in os.listdir(path):
             file.write(f"{filename}\n")
 
