@@ -5,19 +5,21 @@ import pickle
 from typing import Any
 
 
-def list_pdb():
-    with open("data/training_set.txt", 'w') as train_file:
-        for filename in os.listdir("data/training_set"):
-            train_file.write(f"{filename}\n")
+def list_pdb(path: str, data: str):
+    """
+    Write the list of pdb files in a directory in a txt file
+    """
+    with open(f"tmp/{data}_set.txt", 'w') as file:
+        for filename in os.listdir(path):
+            file.write(f"{filename}\n")
 
-    with open("data/testing_set.txt", 'w') as test_file:
-        for filename in os.listdir("data/testing_set"):
-            test_file.write(f"{filename}\n")
+    return
 
-    return None
 
 def text_to_csv(path : str):
-
+    """
+    Extract the angle values of a file to write them in a csv
+    """
     with open(path, 'r') as filin, open(f"{path[:-4]}.csv", 'w') as filout:
         filout.write("ETA,THETA\n")
         for line in filin:
@@ -25,12 +27,14 @@ def text_to_csv(path : str):
 
             if values[0] != "THETA" and values[0] != "NA" and values[1] != "NA":
                 filout.write(f"{float(values[1])},{float(values[0])}\n")
-    os.remove(path)
     
     return
 
 
 def get_angle(path):
+    """
+    Extract the angle values of a csv to write them in an array
+    """
     angle = []
 
     data = pd.read_csv(path)
@@ -45,7 +49,9 @@ def get_angle(path):
 
 
 def save_model(path : str, model : Any):
-
+    """
+    Save a model in pickle format
+    """
     with open(path, 'wb') as model_file:
         pickle.dump(model, model_file)
 
@@ -53,7 +59,9 @@ def save_model(path : str, model : Any):
 
 
 def load_model(path):
-
+    """
+    Load a model in pickle format
+    """
     with open(path, 'rb') as model_file:
         loaded_model = pickle.load(model_file)
 
@@ -61,6 +69,9 @@ def load_model(path):
 
 
 def labels_to_seq(tab: np.array):
+    """
+    Transform the labels of an array in a string sequence
+    """
     sequence = ""
     list_structure = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
