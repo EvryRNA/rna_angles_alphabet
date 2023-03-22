@@ -37,8 +37,6 @@ class Pipeline:
         Compute the angle values of the training dataset and store them in a csv
         """
         list_pdb(self.training_path, "training")
-        print(f"src/c_code/angle -d {self.training_path} -l tmp/training_set.txt -o tmp/result_train -R -p -f -t")
-        breakpoint()
         os.system(f"src/c_code/angle -d {self.training_path} -l tmp/training_set.txt -o tmp/result_train -R -p -f -t")
         text_to_csv("tmp/result_train.txt")
 
