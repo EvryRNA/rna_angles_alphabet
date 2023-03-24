@@ -43,7 +43,6 @@ def get_angle(path):
 
     for j in range(0, len(x)):
         angle.append([x[j], y[j]])
-    os.remove(path)
     
     return np.array(angle)
 
