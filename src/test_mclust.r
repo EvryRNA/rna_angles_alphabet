@@ -1,4 +1,5 @@
 library(mclust)
+library(labelled)
 
 
 train_data <- read.csv(file = 'tmp/result_train.csv')
@@ -13,7 +14,10 @@ test_data <- read.csv(file = 'tmp/result_test.csv')
 load_model <- readRDS("tmp/model_mclust.rds")
 info_pred <- predict(load_model, test_data)
 
-info_pred.classification
+get_labels(info_pred)
+
+
+
 
 # # Open png file
 # png("tmp/mclust_plot.png") 
