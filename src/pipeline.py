@@ -4,6 +4,9 @@ import os
 from src.utils import list_pdb, get_angle, text_to_csv, labels_to_seq
 from src.clustering_method import dbscan_cluster, kmeans_cluster, hierarchical_cluster, predict_labels
 
+# CONVERTER_NAME_TO_CLUSTER_MODEL = {
+#     "dbscan": ClusterSklearn,
+# }
 
 class Pipeline:
     def __init__(self,
@@ -57,6 +60,9 @@ class Pipeline:
         Train a model with the training values
         """
         x = get_angle(f"{temp_dir}/result_train.csv")
+
+        # cluster_helper = CONVERTER_NAME_TO_CLUSTER_MODEL.get(method_name)(nb_cluster,  )
+        # return cluster_helper.predict()
         if method_name == "dbscan":
             dbscan_cluster(x, temp_dir)
         elif method_name == "kmeans":
