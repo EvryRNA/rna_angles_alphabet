@@ -1,20 +1,21 @@
 library(mclust)
-library(labelled)
 
 
-train_data <- read.csv(file = 'tmp/result_train.csv')
+train_data <- read.csv(file = "tmp/result_train.csv")
 
 model_mclust <- Mclust(train_data)
-# summary(model_mclust)
 saveRDS(model_mclust, "tmp/model_mclust.rds")
 
 
-test_data <- read.csv(file = 'tmp/result_test.csv')
+test_data <- read.csv(file = "tmp/result_test.csv")
 
 load_model <- readRDS("tmp/model_mclust.rds")
-info_pred <- predict(load_model, test_data)
+summary(load_model)
 
-get_labels(info_pred)
+info_pred <- predict(load_model, test_data)
+labels <- info_pred$classification
+
+labels
 
 
 
