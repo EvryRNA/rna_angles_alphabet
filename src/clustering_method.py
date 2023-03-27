@@ -5,10 +5,10 @@ import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 
 from src.scatter_plot import plot_cluster
-from src.utils import save_model, load_model
+from src.utils import load_model, save_model
 
 
-def kmeans_cluster(x : np.array, nb_clusters : int, temp_dir : str):
+def kmeans_cluster(x: np.array, nb_clusters: int, temp_dir: str):
     """
     Train a kmeans model on a dataset
     """
@@ -24,7 +24,7 @@ def kmeans_cluster(x : np.array, nb_clusters : int, temp_dir : str):
     return
 
 
-def hierarchical_cluster(x : np.array, temp_dir : str):
+def hierarchical_cluster(x: np.array, temp_dir: str):
     """
     Train a hierarchical model on a dataset
     """
@@ -40,7 +40,7 @@ def hierarchical_cluster(x : np.array, temp_dir : str):
     return
 
 
-def dbscan_cluster(x : np.array, temp_dir : str):
+def dbscan_cluster(x: np.array, temp_dir: str):
     """
     Train a dbscan model on a dataset
     """
@@ -57,7 +57,7 @@ def dbscan_cluster(x : np.array, temp_dir : str):
     return
 
 
-def predict_labels(test : np.array, model_name : str, temp_dir : str):
+def predict_labels(test: np.array, model_name: str, temp_dir: str):
     """
     Load a model and predict the labels for a testing set
     """
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         hierarchical_cluster()
 
     elif method == "d":
-        dbscan_cluster(np.array([0,1],[1,0]))
+        dbscan_cluster(np.array([0, 1], [1, 0]))
 
     else:
         print("wrong method")
