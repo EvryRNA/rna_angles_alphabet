@@ -2,7 +2,7 @@ import argparse
 from typing import Any
 
 import numpy as np
-from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
 
 from src.scatter_plot import plot_cluster
 from src.utils import load_model, save_model
@@ -53,6 +53,23 @@ def dbscan_cluster(x: np.array, temp_dir: str):
 
     save_model(f"{temp_dir}/dbscan_model.pickle", cluster_db)
     plot_cluster(x, labels + 1, nb_clusters, "dbscan", temp_dir)
+
+    return
+
+
+def mean_shift_cluster(x: np.array, temp_dir: str):
+    """
+    Train a mean shift model on a dataset
+    """
+    model = MeanShift(bandwidth=None)
+    cluster_ms = model.fit(x)
+    labels = cluster_ms.fit_predict(x)
+    nb_clusters = len(np.unique(labels))
+
+    print("Mean Shift clustering done, number of clusters :", nb_clusters)
+
+    save_model(f"{temp_dir}/mean_shift_model.pickle", cluster_ms)
+    plot_cluster(x, labels + 1, nb_clusters, "mean_shift", temp_dir)
 
     return
 

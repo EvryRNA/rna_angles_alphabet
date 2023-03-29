@@ -1,5 +1,6 @@
 import os
 import pickle
+import string
 from typing import Any
 
 import numpy as np
@@ -73,11 +74,11 @@ def labels_to_seq(tab: np.array):
     Transform the labels of an array in a string sequence
     """
     sequence = ""
-    list_structure = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+    list_structure = list(string.ascii_uppercase)
 
     for i in range(0, len(tab)):
         if tab[i] == -1:
-            letter = "X"
+            letter = "-"
         else:
             letter = list_structure[tab[i]]
         sequence += letter

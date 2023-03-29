@@ -5,6 +5,7 @@ from src.clustering_method import (
     dbscan_cluster,
     hierarchical_cluster,
     kmeans_cluster,
+    mean_shift_cluster,
     predict_labels,
 )
 from src.utils import get_angle, labels_to_seq, list_pdb, text_to_csv
@@ -72,6 +73,8 @@ class Pipeline:
         # return cluster_helper.predict()
         if method_name == "dbscan":
             dbscan_cluster(x, temp_dir)
+        elif method_name == "mean_shift":
+            mean_shift_cluster(x, temp_dir)
         elif method_name == "kmeans":
             kmeans_cluster(x, nb_cluster, temp_dir)
         elif method_name == "hierarchical":
@@ -87,11 +90,18 @@ class Pipeline:
         print(seq)
 
     def main(self):
-        self.setup_dir(self.temp_dir)
-        self.get_train_values(self.training_path, self.temp_dir)
-        self.train_model(self.method_name, self.nb_cluster, self.temp_dir)
-        self.get_test_values(self.testing_path, self.temp_dir)
-        self.get_sequence(self.method_name, self.temp_dir)
+        if self.method_name == "mclust":
+            self.setup_dir(self.temp_dir)
+            self.get_train_values(self.training_path, self.temp_dir)
+            os.system("Rscript src/mclust.r train")
+            self.get_test_values(self.testing_path, self.temp_dir)
+            os.system("Rscript src/mclust.r test")
+        else:
+            self.setup_dir(self.temp_dir)
+            self.get_train_values(self.training_path, self.temp_dir)
+            self.train_model(self.method_name, self.nb_cluster, self.temp_dir)
+            self.get_test_values(self.testing_path, self.temp_dir)
+            self.get_sequence(self.method_name, self.temp_dir)
 
     @staticmethod
     def get_arguments():
@@ -119,7 +129,7 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "kmeans", "hierarchical"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust"],
             default="dbscan",
             help="",
         )
