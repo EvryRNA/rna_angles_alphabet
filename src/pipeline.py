@@ -93,9 +93,9 @@ class Pipeline:
         if self.method_name == "mclust":
             self.setup_dir(self.temp_dir)
             self.get_train_values(self.training_path, self.temp_dir)
-            os.system("Rscript src/mclust.r train")
+            os.system(f"Rscript src/mclust.r train {self.temp_dir}")
             self.get_test_values(self.testing_path, self.temp_dir)
-            os.system("Rscript src/mclust.r test")
+            os.system(f"Rscript src/mclust.r test {self.temp_dir}")
         else:
             self.setup_dir(self.temp_dir)
             self.get_train_values(self.training_path, self.temp_dir)
