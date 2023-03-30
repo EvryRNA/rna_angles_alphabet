@@ -49,7 +49,7 @@ class Pipeline:
         """
         list_pdb(training_path, "training", temp_dir)
         os.system(
-            f"src/c_code/angle -d {training_path} -l {temp_dir}/training_set.txt -o {temp_dir}/result_train -R -p -f -t"
+            f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o {temp_dir}/result_train -R -p -f -t"
         )
         text_to_csv(f"{temp_dir}/result_train.txt")
 
@@ -59,7 +59,7 @@ class Pipeline:
         """
         list_pdb(testing_path, "testing", temp_dir)
         os.system(
-            f"src/c_code/angle -d {testing_path} -l {temp_dir}/testing_set.txt -o {temp_dir}/result_test -R -p -f -t"
+            f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o {temp_dir}/result_test -R -p -f -t"
         )
         text_to_csv(f"{temp_dir}/result_test.txt")
 
