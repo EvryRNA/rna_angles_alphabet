@@ -4,8 +4,8 @@ Unit test to check if a model is well saved and can be loaded
 import os
 import unittest
 
-
-from src.utils import get_angle, text_to_csv, save_model, load_model
+from src.plot_helper import get_colors
+from src.utils import get_angle, text_to_csv, labels_to_seq, save_model, load_model
 
 path = os.path.join("tests", "data", "test_unit.txt")
 
@@ -28,10 +28,18 @@ class ModelTest(unittest.TestCase):
         Test the csv function
         """
         with open(path, 'w') as file_test:
-            text_to_csv(path)
+            text_to_csv(path, ["ETA", "THETA"])
         self.assertTrue(os.path.isfile(f"{path[:-4]}.csv"))
         os.remove(path)
         os.remove(f"{path[:-4]}.csv")
+
+    
+    def test_labels_to_seq(self):
+        """
+        Test the labels to seq function
+        """
+        test_labels = [-1, 0, 1, 2, 3, 7, 1, 0, -1, 3, -1]
+        self.assertEqual("-ABCDHBA-D-", labels_to_seq(test_labels))
         
 
     def test_save_model(self):
@@ -58,7 +66,12 @@ class ModelTest(unittest.TestCase):
         # self.assertEqual(y_pred, y_test)
 
 
-
+    def test_get_colors(self):
+        """
+        Test if the function return a list of colors
+        """
+        list_colors = get_colors(5)
+        self.assertTrue(list_colors[0] == "k" and len(list_colors) == 5)
 
 if __name__ == "__main__":
     unittest.main()

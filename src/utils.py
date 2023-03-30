@@ -58,7 +58,7 @@ def save_model(path: str, model: Any):
     return
 
 
-def load_model(path):
+def load_model(path: str):
     """
     Load a model in pickle format
     """
@@ -68,7 +68,7 @@ def load_model(path):
     return loaded_model
 
 
-def labels_to_seq(tab: np.array):
+def labels_to_seq(tab):
     """
     Transform the labels of an array in a string sequence
     """

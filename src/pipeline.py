@@ -10,10 +10,6 @@ from src.clustering_method import (
 )
 from src.utils import get_angle, labels_to_seq, list_pdb, text_to_csv
 
-# CONVERTER_NAME_TO_CLUSTER_MODEL = {
-#     "dbscan": ClusterSklearn,
-# }
-
 
 class Pipeline:
     def __init__(
@@ -52,11 +48,13 @@ class Pipeline:
         list_pdb(training_path, "training", temp_dir)
         if angles[0] == "PHI":
             os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o {temp_dir}/result_train -p -f -t"
+                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
+                + f"{temp_dir}/result_train -p -f -t"
             )
         elif angles[0] == "ETA":
             os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o {temp_dir}/result_train -R -p -f -t"
+                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
+                + f"{temp_dir}/result_train -R -p -f -t"
             )
         text_to_csv(f"{temp_dir}/result_train.txt", angles)
 
@@ -67,11 +65,13 @@ class Pipeline:
         list_pdb(testing_path, "testing", temp_dir)
         if angles[0] == "PHI":
             os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o {temp_dir}/result_test -p -f -t"
+                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
+                + f"{temp_dir}/result_test -p -f -t"
             )
         elif angles[0] == "ETA":
             os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o {temp_dir}/result_test -R -p -f -t"
+                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
+                + f"{temp_dir}/result_test -R -p -f -t"
             )
         text_to_csv(f"{temp_dir}/result_test.txt", angles)
 
@@ -81,8 +81,6 @@ class Pipeline:
         """
         x = get_angle(f"{temp_dir}/result_train.csv")
 
-        # cluster_helper = CONVERTER_NAME_TO_CLUSTER_MODEL.get(method_name)(nb_cluster,  )
-        # return cluster_helper.predict()
         if method_name == "dbscan":
             dbscan_cluster(x, temp_dir)
         elif method_name == "mean_shift":

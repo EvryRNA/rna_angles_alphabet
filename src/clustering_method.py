@@ -1,14 +1,11 @@
-import argparse
-from typing import Any
-
 import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
 
-from src.scatter_plot import plot_cluster
+from src.plot_helper import plot_cluster
 from src.utils import load_model, save_model
 
 
-def kmeans_cluster(x: np.array, nb_clusters: int, temp_dir: str):
+def kmeans_cluster(x, nb_clusters: int, temp_dir: str):
     """
     Train a kmeans model on a dataset
     """
@@ -24,7 +21,7 @@ def kmeans_cluster(x: np.array, nb_clusters: int, temp_dir: str):
     return
 
 
-def hierarchical_cluster(x: np.array, temp_dir: str):
+def hierarchical_cluster(x, temp_dir: str):
     """
     Train a hierarchical model on a dataset
     """
@@ -40,7 +37,7 @@ def hierarchical_cluster(x: np.array, temp_dir: str):
     return
 
 
-def dbscan_cluster(x: np.array, temp_dir: str):
+def dbscan_cluster(x, temp_dir: str):
     """
     Train a dbscan model on a dataset
     """
@@ -57,7 +54,7 @@ def dbscan_cluster(x: np.array, temp_dir: str):
     return
 
 
-def mean_shift_cluster(x: np.array, temp_dir: str):
+def mean_shift_cluster(x, temp_dir: str):
     """
     Train a mean shift model on a dataset
     """
@@ -74,11 +71,12 @@ def mean_shift_cluster(x: np.array, temp_dir: str):
     return
 
 
-def predict_labels(test: np.array, model_name: str, temp_dir: str):
+def predict_labels(test, model_name: str, temp_dir: str):
     """
     Load a model and predict the labels for a testing set
     """
     predict_model = load_model(f"{temp_dir}/{model_name}_model.pickle")
     labels = predict_model.fit_predict(test)
+    print(type(labels))
 
     return labels
