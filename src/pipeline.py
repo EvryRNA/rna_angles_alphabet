@@ -17,67 +17,92 @@ class Pipeline:
         training_path: str,
         testing_path: str,
         temp_dir: str,
-        nb_cluster: int,
+        nb_clusters: int,
         method_name: str,
         mol: str,
     ):
         """
-        Initialize the different parameters
+        Initialize the different attributes
         """
         self.training_path = training_path
         self.testing_path = testing_path
         self.temp_dir = temp_dir
-        self.nb_cluster = nb_cluster
+        self.nb_clusters = nb_clusters
         self.method_name = method_name
         self.mol = mol
 
     def setup_dir(self, temp_dir: str):
         """
         Create a temporary directory to store transitory files
-        """
-        if not os.path.isdir(temp_dir):
-            os.mkdir(temp_dir)
-        else:
-            for file in os.listdir(temp_dir):
-                os.remove(f"{temp_dir}/{file}")
 
-    def get_train_values(self, training_path: str, temp_dir: str, angles: list):
+        Parameters
+        ----------
+        temp_dir : the path of the temporary directory
+        """
+        os.makedirs(temp_dir, exist_ok = True)
+
+    def get_train_values(self, training_path: str, temp_dir: str, angles_names: list):
         """
         Compute the angle values of the training dataset and store them in a csv
+
+        Parameters
+        ----------
+        training_path : the path of the directory containing the pdb used for training
+        temp_dir : the path of the temporary directory
+        angles_names : names of the angles in the file, PHI-PSI for protein and
+        ETA-THETA for RNA
         """
         list_pdb(training_path, "training", temp_dir)
-        if angles[0] == "PHI":
+        if angles_names[0] == "PHI":
             os.system(
                 f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
                 + f"{temp_dir}/result_train -p -f -t"
             )
-        elif angles[0] == "ETA":
+        elif angles_names[0] == "ETA":
             os.system(
                 f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
                 + f"{temp_dir}/result_train -R -p -f -t"
             )
-        text_to_csv(f"{temp_dir}/result_train.txt", angles)
+        text_to_csv(f"{temp_dir}/result_train.txt", angles_names)
 
-    def get_test_values(self, testing_path: str, temp_dir: str, angles: list):
+    def get_test_values(self, testing_path: str, temp_dir: str, angles_names: list):
         """
         Compute the angle values of the testing dataset and store them in a csv
+
+        Parameters
+        ----------
+        testing_path : the path of the directory containing the pdb to process
+        temp_dir : the path of the temporary directory
+        angles_names : names of the angles in the file, PHI-PSI for protein and
+        ETA-THETA for RNA
         """
         list_pdb(testing_path, "testing", temp_dir)
-        if angles[0] == "PHI":
+        if angles_names[0] == "PHI":
             os.system(
                 f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
                 + f"{temp_dir}/result_test -p -f -t"
             )
-        elif angles[0] == "ETA":
+        elif angles_names[0] == "ETA":
             os.system(
                 f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
                 + f"{temp_dir}/result_test -R -p -f -t"
             )
-        text_to_csv(f"{temp_dir}/result_test.txt", angles)
+        text_to_csv(f"{temp_dir}/result_test.txt", angles_names)
 
-    def train_model(self, method_name: str, nb_cluster: int, temp_dir: str, angles: list):
+    def train_model(
+        self,
+        method_name: str,
+        nb_clusters: int,
+        temp_dir: str,
+    ):
         """
         Train a model with the training values
+
+        Parameters
+        ----------
+        method_name : the name of the clustering method to use
+        nb_clusters : the number of clusters to be used by some methods
+        temp_dir : the path of the temporary directory
         """
         x = get_angle(f"{temp_dir}/result_train.csv")
 
@@ -86,36 +111,41 @@ class Pipeline:
         elif method_name == "mean_shift":
             mean_shift_cluster(x, temp_dir)
         elif method_name == "kmeans":
-            kmeans_cluster(x, nb_cluster, temp_dir)
+            kmeans_cluster(x, nb_clusters, temp_dir)
         elif method_name == "hierarchical":
             hierarchical_cluster(x, temp_dir)
 
     def get_sequence(self, method_name: str, temp_dir: str):
         """
         Fit the testing values on the train model and get a representative sequence
+
+        Parameters
+        ----------
+        method_name : the name of the clustering method used
+        temp_dir : the path of the temporary directory
         """
         x = get_angle(f"{temp_dir}/result_test.csv")
-        labels = predict_labels(x, method_name, temp_dir)
+        labels = list(predict_labels(x, method_name, temp_dir))
         seq = labels_to_seq(labels)
         print(seq)
 
     def main(self):
         if self.mol == "prot":
-            angles = ["PHI", "PSI"]
+            angles_names = ["PHI", "PSI"]
         elif self.mol == "rna":
-            angles = ["ETA", "THETA"]
+            angles_names = ["ETA", "THETA"]
 
         if self.method_name == "mclust":
             self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles)
+            self.get_train_values(self.training_path, self.temp_dir, angles_names)
             os.system(f"Rscript src/mclust.r train {self.temp_dir}")
-            self.get_test_values(self.testing_path, self.temp_dir, angles)
+            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
             os.system(f"Rscript src/mclust.r test {self.temp_dir}")
         else:
             self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles)
-            self.train_model(self.method_name, self.nb_cluster, self.temp_dir, angles)
-            self.get_test_values(self.testing_path, self.temp_dir, angles)
+            self.get_train_values(self.training_path, self.temp_dir, angles_names)
+            self.train_model(self.method_name, self.nb_clusters, self.temp_dir)
+            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
             self.get_sequence(self.method_name, self.temp_dir)
 
     @staticmethod
@@ -125,20 +155,20 @@ class Pipeline:
             "--training_path",
             dest="training_path",
             type=str,
-            help="",
+            help="The path to the directory with the training data",
         )
         parser.add_argument(
             "--testing_path",
             dest="testing_path",
             type=str,
-            help="",
+            help="The path to the directory with the testing data",
         )
         parser.add_argument(
             "--temp_dir",
             dest="temp_dir",
             type=str,
             default="tmp",
-            help="",
+            help="The path to the directory used for the temporary files",
         )
         parser.add_argument(
             "--method",
@@ -146,22 +176,22 @@ class Pipeline:
             type=str,
             choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust"],
             default="dbscan",
-            help="",
+            help="The custering method to use, kmeans needs nb_clusters",
         )
         parser.add_argument(
-            "--nb_cluster",
-            dest="nb_cluster",
+            "--nb_clusters",
+            dest="nb_clusters",
             type=int,
             choices=range(2, 8),
             default=7,
-            help="",
+            help="The number of clusters used by some clustering method",
         )
         parser.add_argument(
             "--mol",
             dest="mol",
             type=str,
             choices=["prot", "rna"],
-            help="",
+            help="The type of biomolecule to process, protein or RNA",
         )
         args = parser.parse_args()
         return args

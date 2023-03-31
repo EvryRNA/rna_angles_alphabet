@@ -7,9 +7,13 @@ import numpy as np
 from src.utils import get_angle
 
 
-def raw_angle(path):
+def raw_angle(path: str):
     """
     Plot the raw data of angle values using a csv file
+
+    Parameters
+        ----------
+        path : the name of the csv containing the angle values
     """
     eta, theta = [], []
     angle = get_angle(path)
@@ -25,14 +29,21 @@ def raw_angle(path):
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
-    plt.show()
-
-    return
+    plt.savefig("raw_data.png")
 
 
-def plot_cluster(data, label, nb_clusters, method, temp_dir):
+def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
     """
     Plot the results of a clustering method
+
+    Parameters
+        ----------
+        x : a np.array of size (N, M) with N the number of couples of angles of the
+        training set and M their values
+        label : list of the labels of the model
+        nb_clusters : number of clusters of the model
+        method : name of the clustering method used
+        temp_dir : the path of the temporary directory
     """
     if nb_clusters <= 7:
         colors = ["k", "r", "g", "b", "y", "m", "c"]
@@ -41,7 +52,7 @@ def plot_cluster(data, label, nb_clusters, method, temp_dir):
         colors = get_colors(nb_clusters)
 
     for i in range(0, nb_clusters):
-        filter = f"label{i} = data[label == {i}]"
+        filter = f"label{i} = x[label == {i}]"
         exec(filter)
         scatter = f"plt.scatter(label{i}[:,0], label{i}[:,1], 2, color = '{colors[i]}')"
         exec(scatter)
@@ -57,14 +68,18 @@ def plot_cluster(data, label, nb_clusters, method, temp_dir):
     return
 
 
-def get_colors(nb):
+def get_colors(nb_colors: int):
     """
     Return a list of random colors
+
+    Parameters
+        ----------
+        nb_colors : the number of colors to return
     """
     colors = ["k"]
     list_colors = mcolors.CSS4_COLORS
 
-    for i in range(1, nb):
+    for i in range(1, nb_colors):
         colors.append(random.choice(list(list_colors.keys())))
 
     return colors
