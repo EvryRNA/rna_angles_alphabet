@@ -39,7 +39,7 @@ class Pipeline:
         ----------
         temp_dir : the path of the temporary directory
         """
-        os.makedirs(temp_dir, exist_ok = True)
+        os.makedirs(temp_dir, exist_ok=True)
 
     def get_train_values(self, training_path: str, temp_dir: str, angles_names: list):
         """
