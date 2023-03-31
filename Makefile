@@ -41,12 +41,6 @@ test_documentation:
 
 all_tests: test_static_all test_complexity test_documentation test_unit_coverage
 
-NAME="Clement"
-run:
-	$(PYTHON) src.return_hello --name=$(NAME)
-
-test_angle:
-	src/c_code/angle -d data/testing_set/ -l data/testing.txt -o data/result_test -R -p -f -t
-
-train_angle:
-	src/c_code/angle -d data/training_set/ -l data/training.txt -o data/result_train -R -p -f -t
+# Launch pipeline with dbscan on RNA
+run_pipeline:
+	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna
