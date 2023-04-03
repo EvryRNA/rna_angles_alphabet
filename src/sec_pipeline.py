@@ -9,7 +9,8 @@ from src.clustering_method import (
     predict_labels,
 )
 from src.utils import get_angle, labels_to_seq, list_pdb, text_to_csv
-
+from src.preprocessing_classes.rna import RNA_Prep
+from src.preprocessing_classes.protein import Protein_Prep
 
 class Pipeline:
     def __init__(
@@ -40,29 +41,32 @@ class Pipeline:
         """
         os.makedirs(temp_dir, exist_ok=True)
 
-    def get_values(self, dataset_path: str, data_type: str, temp_dir: str, angle_names: list):
-        """
-        Compute the angle values of the training dataset and store them in a csv
+    def get_angles(self, training_path: str, testing_path: str, temp_dir: str, mol: str):
+        if mol == "rna":
+            if training_path != None:
+                train_angles = RNA_Prep(training_path, "train", temp_dir)
+                train_angles.get_list(training_path, "train", temp_dir)
+                train_angles.get_values(training_path, "train", temp_dir)
+                train_angles.get_csv("train", temp_dir, ["ETA", "THETA"])
 
-        Args:
-            :param dataset_path: the path of the directory containing the pdb
-            :param data_type: either training or testing data
-            :param temp_dir: the path of the temporary directory
-            :param angle_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-        """
-        list_pdb(dataset_path, data_type, temp_dir)
-        if angle_names[0] == "PHI":
-            os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt"
-                + f"-o {temp_dir}/{data_type}_values -p -f -t"
-            )
-        elif angle_names[0] == "ETA":
-            os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt"
-                + f"-o {temp_dir}/{data_type}_values -R -p -f -t"
-            )
-        text_to_csv(f"{temp_dir}/{data_type}_values.txt", angle_names)
+            if testing_path != None:
+                test_angles = RNA_Prep(testing_path, "test", temp_dir)
+                test_angles.get_list(testing_path, "test", temp_dir)
+                test_angles.get_values(testing_path, "test", temp_dir)
+                test_angles.get_csv("test", temp_dir, ["ETA", "THETA"])
+
+        elif mol == "protein":
+            if training_path != None:
+                train_angles = Protein_Prep(training_path, "train", temp_dir)
+                train_angles.get_list(training_path, "train", temp_dir)
+                train_angles.get_values(training_path, "train", temp_dir)
+                train_angles.get_csv("train", temp_dir, ["ETA", "THETA"])
+
+            if testing_path != None:
+                test_angles = Protein_Prep(testing_path, "test", temp_dir)
+                test_angles.get_list(testing_path, "test", temp_dir)
+                test_angles.get_values(testing_path, "test", temp_dir)
+                test_angles.get_csv("test", temp_dir, ["ETA", "THETA"])
 
     def train_model(
         self,
@@ -103,22 +107,16 @@ class Pipeline:
         print(seq)
 
     def main(self):
-        if self.mol == "prot":
-            angles_names = ["PHI", "PSI"]
-        elif self.mol == "rna":
-            angles_names = ["ETA", "THETA"]
 
         if self.method_name == "mclust":
             self.setup_dir(self.temp_dir)
-            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
+            self.get_angles(self.training_path, self.testing_path, self.temp_dir, self.mol)
             os.system(f"Rscript src/mclust.r train {self.temp_dir}")
-            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
             os.system(f"Rscript src/mclust.r test {self.temp_dir}")
         else:
             self.setup_dir(self.temp_dir)
-            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
+            self.get_angles(self.training_path, self.testing_path, self.temp_dir, self.mol)
             self.train_model(self.method_name, self.nb_clusters, self.temp_dir)
-            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
             self.get_sequence(self.method_name, self.temp_dir)
 
     @staticmethod
