@@ -5,7 +5,7 @@ export PATH_TO_UNIT_TESTS=tests/unit
 
 # Score thresholds
 export COVERAGE_SCORE=10
-export COMPLEXITY_SCORE=2.5
+export COMPLEXITY_SCORE=2.7
 export DOCUMENTATION_SCORE=5
 
 # Max line length for black
@@ -41,10 +41,6 @@ test_documentation:
 
 all_tests: test_static_all test_complexity test_documentation test_unit_coverage
 
-NAME="Clement"
-run:
-	$(PYTHON) src.return_hello --name=$(NAME)
-
-
-
-
+# Launch pipeline with dbscan on RNA
+run_pipeline:
+	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna

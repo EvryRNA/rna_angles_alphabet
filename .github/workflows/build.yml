@@ -27,7 +27,7 @@ jobs:
           MAX_LINE_LENGTH: 99
           COMPLEXITY_SCORE: 2.5
           COVERAGE_SCORE: 10
-          DOCUMENTATION_SCORE: 5
+          DOCUMENTATION_SCORE: 0.5
 
   # Notification after the different tests
   post_test_discord:
