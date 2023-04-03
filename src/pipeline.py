@@ -35,9 +35,8 @@ class Pipeline:
         """
         Create a temporary directory to store transitory files
 
-        Parameters
-        ----------
-        temp_dir : the path of the temporary directory
+        Args:
+            :param temp_dir: the path of the temporary directory
         """
         os.makedirs(temp_dir, exist_ok=True)
 
@@ -45,12 +44,11 @@ class Pipeline:
         """
         Compute the angle values of the training dataset and store them in a csv
 
-        Parameters
-        ----------
-        training_path : the path of the directory containing the pdb used for training
-        temp_dir : the path of the temporary directory
-        angles_names : names of the angles in the file, PHI-PSI for protein and
-        ETA-THETA for RNA
+        Args:
+            :param training_path: the path of the directory containing the pdb used for training
+            :param temp_dir: the path of the temporary directory
+            :param angles_names: names of the angles in the file, PHI-PSI for protein and
+            ETA-THETA for RNA
         """
         list_pdb(training_path, "training", temp_dir)
         if angles_names[0] == "PHI":
@@ -69,12 +67,11 @@ class Pipeline:
         """
         Compute the angle values of the testing dataset and store them in a csv
 
-        Parameters
-        ----------
-        testing_path : the path of the directory containing the pdb to process
-        temp_dir : the path of the temporary directory
-        angles_names : names of the angles in the file, PHI-PSI for protein and
-        ETA-THETA for RNA
+        Args:
+            :param testing_path: the path of the directory containing the pdb to process
+            :param temp_dir: the path of the temporary directory
+            :param angles_names: names of the angles in the file, PHI-PSI for protein and
+            ETA-THETA for RNA
         """
         list_pdb(testing_path, "testing", temp_dir)
         if angles_names[0] == "PHI":
@@ -98,11 +95,10 @@ class Pipeline:
         """
         Train a model with the training values
 
-        Parameters
-        ----------
-        method_name : the name of the clustering method to use
-        nb_clusters : the number of clusters to be used by some methods
-        temp_dir : the path of the temporary directory
+        Args:
+            :param method_name: the name of the clustering method to use
+            :param nb_clusters: the number of clusters to be used by some methods
+            :param temp_dir: the path of the temporary directory
         """
         x = get_angle(f"{temp_dir}/result_train.csv")
 
@@ -119,10 +115,9 @@ class Pipeline:
         """
         Fit the testing values on the train model and get a representative sequence
 
-        Parameters
-        ----------
-        method_name : the name of the clustering method used
-        temp_dir : the path of the temporary directory
+        Args:
+            :param method_name: the name of the clustering method used
+            :param temp_dir: the path of the temporary directory
         """
         x = get_angle(f"{temp_dir}/result_test.csv")
         labels = list(predict_labels(x, method_name, temp_dir))

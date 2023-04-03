@@ -11,9 +11,8 @@ def raw_angle(path: str):
     """
     Plot the raw data of angle values using a csv file
 
-    Parameters
-        ----------
-        path : the name of the csv containing the angle values
+    Args:
+        :param path: the name of the csv containing the angle values
     """
     eta, theta = [], []
     angle = get_angle(path)
@@ -36,14 +35,13 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
     """
     Plot the results of a clustering method
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the
-        training set and M their values
-        label : list of the labels of the model
-        nb_clusters : number of clusters of the model
-        method : name of the clustering method used
-        temp_dir : the path of the temporary directory
+    Args:
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the
+                training set and M their values
+        :param label: list of the labels of the model
+        :param nb_clusters: number of clusters of the model
+        :param method: name of the clustering method used
+        :param temp_dir: the path of the temporary directory
     """
     if nb_clusters <= 7:
         colors = ["k", "r", "g", "b", "y", "m", "c"]
@@ -72,9 +70,8 @@ def get_colors(nb_colors: int):
     """
     Return a list of random colors
 
-    Parameters
-        ----------
-        nb_colors : the number of colors to return
+    Args:
+        :param nb_colors: the number of colors to return
     """
     colors = ["k"]
     list_colors = mcolors.CSS4_COLORS

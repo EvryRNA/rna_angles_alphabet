@@ -9,12 +9,11 @@ def kmeans_cluster(x, nb_clusters: int, temp_dir: str):
     """
     Train a kmeans model on a dataset
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the
-        training set and M their values
-        nb_clusters : the number of clusters used by KMeans
-        temp_dir : the path of the temporary directory
+    Args:
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the
+                    training set and M their values
+        :param nb_clusters: the number of clusters used by KMeans
+        :param temp_dir: the path of the temporary directory
     """
     model = KMeans(n_clusters=nb_clusters, n_init="auto")
     cluster_kmeans = model.fit(x)
@@ -30,11 +29,10 @@ def hierarchical_cluster(x, temp_dir: str):
     """
     Train a hierarchical model on a dataset
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the
-        training set and M their values
-        temp_dir : the path of the temporary directory
+    Args:
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the
+                training set and M their values
+        :param temp_dir: the path of the temporary directory
     """
     model = AgglomerativeClustering(n_clusters=None, linkage="ward", distance_threshold=2000)
     cluster_h = model.fit(x)
@@ -50,11 +48,10 @@ def dbscan_cluster(x, temp_dir: str):
     """
     Train a dbscan model on a dataset
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the
-        training set and M their values
-        temp_dir : the path of the temporary directory
+    Args:
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the
+                training set and M their values
+        :param temp_dir: the path of the temporary directory
     """
     model = DBSCAN(eps=8, min_samples=12)
     cluster_db = model.fit(x)
@@ -71,11 +68,10 @@ def mean_shift_cluster(x, temp_dir: str):
     """
     Train a mean shift model on a dataset
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the
-        training set and M their values
-        temp_dir : the path of the temporary directory
+    Args
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the
+                training set and M their values
+        :param temp_dir: the path of the temporary directory
     """
     model = MeanShift(bandwidth=None)
     cluster_ms = model.fit(x)
@@ -92,12 +88,11 @@ def predict_labels(x, model_name: str, temp_dir: str):
     """
     Load a model and predict the labels of a testing file
 
-    Parameters
-        ----------
-        x : a np.array of size (N, M) with N the number of couples of angles of the test
-        file and M their values
-        model_name : the name of the clustering model to load
-        temp_dir : the path of the temporary directory
+    Args:
+        :param x: a np.array of size (N, M) with N the number of couples of angles of the test
+                file and M their values
+        :param model_name: the name of the clustering model to load
+        :param temp_dir: the path of the temporary directory
     """
     predict_model = load_model(f"{temp_dir}/{model_name}_model.pickle")
     labels = predict_model.fit_predict(x)
