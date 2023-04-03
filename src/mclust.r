@@ -46,7 +46,7 @@ predict_labels <- function(load_model, dir) {
 # Rearrange the test labels
 arrange_labels <- function(test_labels, order_model_labels) {
     sequence <- ""
-    for (i in 1:length(test_labels)) {
+    for (i in 1:length(test_labels)) { # nolint: seq_linter.
         test_labels[i] <- grep(test_labels[i], order_model_labels)
         sequence <- paste(sequence, LETTERS[test_labels[i]])
     }
