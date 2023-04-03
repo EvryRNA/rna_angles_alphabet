@@ -40,51 +40,29 @@ class Pipeline:
         """
         os.makedirs(temp_dir, exist_ok=True)
 
-    def get_train_values(self, training_path: str, temp_dir: str, angles_names: list):
+    def get_values(self, dataset_path: str, data_type: str, temp_dir: str, angle_names: list):
         """
         Compute the angle values of the training dataset and store them in a csv
 
         Args:
-            :param training_path: the path of the directory containing the pdb used for training
+            :param dataset_path: the path of the directory containing the pdb
+            :param data_type: either training or testing data
             :param temp_dir: the path of the temporary directory
-            :param angles_names: names of the angles in the file, PHI-PSI for protein and
+            :param angle_names: names of the angles in the file, PHI-PSI for protein and
             ETA-THETA for RNA
         """
-        list_pdb(training_path, "training", temp_dir)
-        if angles_names[0] == "PHI":
+        list_pdb(dataset_path, data_type, temp_dir)
+        if angle_names[0] == "PHI":
             os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
-                + f"{temp_dir}/result_train -p -f -t"
+                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt -o"
+                + f"{temp_dir}/{data_type}_values -p -f -t"
             )
-        elif angles_names[0] == "ETA":
+        elif angle_names[0] == "ETA":
             os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
-                + f"{temp_dir}/result_train -R -p -f -t"
+                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt -o"
+                + f"{temp_dir}/{data_type}_values -R -p -f -t"
             )
-        text_to_csv(f"{temp_dir}/result_train.txt", angles_names)
-
-    def get_test_values(self, testing_path: str, temp_dir: str, angles_names: list):
-        """
-        Compute the angle values of the testing dataset and store them in a csv
-
-        Args:
-            :param testing_path: the path of the directory containing the pdb to process
-            :param temp_dir: the path of the temporary directory
-            :param angles_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-        """
-        list_pdb(testing_path, "testing", temp_dir)
-        if angles_names[0] == "PHI":
-            os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
-                + f"{temp_dir}/result_test -p -f -t"
-            )
-        elif angles_names[0] == "ETA":
-            os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
-                + f"{temp_dir}/result_test -R -p -f -t"
-            )
-        text_to_csv(f"{temp_dir}/result_test.txt", angles_names)
+        text_to_csv(f"{temp_dir}/{data_type}_values.txt", angle_names)
 
     def train_model(
         self,
@@ -100,7 +78,7 @@ class Pipeline:
             :param nb_clusters: the number of clusters to be used by some methods
             :param temp_dir: the path of the temporary directory
         """
-        x = get_angle(f"{temp_dir}/result_train.csv")
+        x = get_angle(f"{temp_dir}/train_values.csv")
 
         if method_name == "dbscan":
             dbscan_cluster(x, temp_dir)
@@ -119,7 +97,7 @@ class Pipeline:
             :param method_name: the name of the clustering method used
             :param temp_dir: the path of the temporary directory
         """
-        x = get_angle(f"{temp_dir}/result_test.csv")
+        x = get_angle(f"{temp_dir}/test_values.csv")
         labels = list(predict_labels(x, method_name, temp_dir))
         seq = labels_to_seq(labels)
         print(seq)
@@ -132,15 +110,15 @@ class Pipeline:
 
         if self.method_name == "mclust":
             self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles_names)
+            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
             os.system(f"Rscript src/mclust.r train {self.temp_dir}")
-            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
+            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
             os.system(f"Rscript src/mclust.r test {self.temp_dir}")
         else:
             self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles_names)
+            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
             self.train_model(self.method_name, self.nb_clusters, self.temp_dir)
-            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
+            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
             self.get_sequence(self.method_name, self.temp_dir)
 
     @staticmethod

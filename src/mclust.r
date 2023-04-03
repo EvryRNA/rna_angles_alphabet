@@ -8,7 +8,7 @@ temp_dir <- args[2]
 
 # Create the model
 create_model <- function(dir) {
-    path_train_data <- paste(dir, "result_train.csv", sep = "/")
+    path_train_data <- paste(dir, "train_values.csv", sep = "/")
     train_data <- read.csv(file = path_train_data)
 
     model_mclust <- Mclust(train_data)
@@ -36,7 +36,7 @@ order_model <- function(load_model) {
 
 # Predict the test labels
 predict_labels <- function(load_model, dir) {
-    path_test_data <- paste(dir, "result_test.csv", sep = "/")
+    path_test_data <- paste(dir, "test_values.csv", sep = "/")
     test_data <- read.csv(file = path_test_data)
     test_labels <- predict(load_model, test_data)$classification
     return(test_labels)

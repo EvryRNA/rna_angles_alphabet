@@ -16,7 +16,7 @@ def list_pdb(path_dir: str, dataset: str, temp_dir: str):
         :param data: the name of the dataset used to name the txt file, training or testing
         :param temp_dir: the path of the temporary directory
     """
-    with open(f"{temp_dir}/{dataset}_set.txt", "w") as file:
+    with open(f"{temp_dir}/{dataset}_list.txt", "w") as file:
         for filename in os.listdir(path_dir):
             file.write(f"{filename}\n")
 
