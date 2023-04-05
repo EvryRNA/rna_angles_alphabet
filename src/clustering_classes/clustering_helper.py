@@ -1,12 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-class Clustering(ABC):
+class Clustering():
 	def __init__(self):
 
 		@abstractmethod
-		def train_model():
-			pass
+		def train_model(self):
+			raise NotImplementedError
 		
 		@abstractmethod
-		def predict_seq():
-			pass
+		def predict_seq(self):
+			raise NotImplementedError

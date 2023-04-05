@@ -12,7 +12,7 @@ create_model <- function(dir) {
     train_data <- read.csv(file = path_train_data)
 
     model_mclust <- Mclust(train_data)
-    path_save_model <- paste(dir, "mclust_model.Rds", sep = "/")
+    path_save_model <- paste("models/mclust_model.Rds", sep = "/")
     saveRDS(model_mclust, path_save_model)
 }
 
@@ -23,16 +23,19 @@ save_png <- function(dir) {
     path_png <- paste(dir, "mclust_cluster.png", sep = "/")
     png(path_png)
     # Create plot
-    path_model <- paste(dir, "mclust_model.Rds", sep = "/")
+    path_model <- paste("models/mclust_model.Rds", sep = "/")
     plot(readRDS(path_model), what = "classification")
     # Close png file
     invisible(dev.off())
+    png_path <- paste("\nClustering save: ", dir,
+    "/mclust_cluster.png\n\n", sep = "")
+    cat(png_path)
 }
 
 
 # Load the model
 test_model <- function(dir) {
-    path_load_model <- paste(dir, "mclust_model.Rds", sep = "/")
+    path_load_model <- paste("models/mclust_model.Rds", sep = "/")
     load_model <- readRDS(path_load_model)
     print(summary(load_model))
     return(load_model)
@@ -69,7 +72,7 @@ arrange_labels <- function(test_labels, order_model_labels) {
 
 if (args[1] == "train") {
     create_model(temp_dir)
-    save_png(load_model, temp_dir)
+    save_png(temp_dir)
 } else if (args[1] == "test") {
     load_model <- test_model(temp_dir)
     order_model_labels <- order_model(load_model)

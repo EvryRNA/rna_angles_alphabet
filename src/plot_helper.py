@@ -63,7 +63,7 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
     plt.yticks(np.arange(0, 361, 36))
     plt.savefig(f"{temp_dir}/{method}_cluster.png")
 
-    return
+    print(f"Clustering save: {temp_dir}/{method}_cluster.png\n")
 
 
 def get_colors(nb_colors: int):

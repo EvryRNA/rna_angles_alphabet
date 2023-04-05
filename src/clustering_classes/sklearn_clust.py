@@ -5,7 +5,7 @@ from src.plot_helper import plot_cluster
 from src.utils import get_angle, labels_to_seq, load_model, save_model
 from src.clustering_classes.clustering_helper import Clustering
 
-class sklearn_clust(Clustering):
+class SklearnClust(Clustering):
 	def __init__(
 		self,
 		temp_dir: str,
@@ -33,16 +33,16 @@ class sklearn_clust(Clustering):
 		labels = cluster_model.fit_predict(x_train)
 		nb_clusters = len(np.unique(labels))
 
-		print(f"\n{method_name} clustering done, number of clusters :", nb_clusters, "\n")
+		print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
 
-		save_model(f"{temp_dir}/{method_name}_model.pickle", cluster_model)
+		save_model(f"models/{method_name}_model.pickle", cluster_model)
 		plot_cluster(x_train, labels + 1, nb_clusters, method_name, temp_dir)
 		
 
 	def predict_seq(self, temp_dir: str, method_name: str):
 		x_test = get_angle(f"{temp_dir}/test_values.csv")
 
-		predict_model = load_model(f"{temp_dir}/{method_name}_model.pickle")
+		predict_model = load_model(f"models/{method_name}_model.pickle")
 		labels = list(predict_model.fit_predict(x_test))
 		seq = labels_to_seq(labels)
 		print(seq)

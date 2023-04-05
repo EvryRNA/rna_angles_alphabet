@@ -1,10 +1,10 @@
 import argparse
 import os
 
-from src.preprocessing_classes.rna import RNA_Prep
-from src.preprocessing_classes.protein import Protein_Prep
-from src.clustering_classes.clustering_r import R_clust
-from src.clustering_classes.clustering_sklearn import sklearn_clust
+from src.preprocessing_classes.rna_prep import RNAPrep
+from src.preprocessing_classes.protein_prep import ProteinPrep
+from src.clustering_classes.r_clust import RClust
+from src.clustering_classes.sklearn_clust import SklearnClust
 
 class Pipeline:
     def __init__(
@@ -26,7 +26,7 @@ class Pipeline:
         self.method_name = method_name
         self.mol = mol
 
-    def setup_dir(self, temp_dir: str):
+    def setup_dir(self, temp_dir: str, training_path: str):
         """
         Create a temporary directory to store transitory files
 
@@ -34,49 +34,44 @@ class Pipeline:
             :param temp_dir: the path of the temporary directory
         """
         os.makedirs(temp_dir, exist_ok=True)
+        os.makedirs("models", exist_ok=True)
+
+
 
     def get_angles(self, training_path: str, testing_path: str, temp_dir: str, mol: str):
         if mol == "rna":
             if training_path != None:
-                train_angles = RNA_Prep(training_path, "train", temp_dir)
-                train_angles.get_list(training_path, "train", temp_dir)
-                train_angles.get_values(training_path, "train", temp_dir)
-                train_angles.get_csv("train", temp_dir, ["ETA", "THETA"])
+                train_angles = RNAPrep(training_path, "train", temp_dir)
+                train_angles.get_preprocessing()
 
             if testing_path != None:
-                test_angles = RNA_Prep(testing_path, "test", temp_dir)
-                test_angles.get_list(testing_path, "test", temp_dir)
-                test_angles.get_values(testing_path, "test", temp_dir)
-                test_angles.get_csv("test", temp_dir, ["ETA", "THETA"])
+                test_angles = RNAPrep(testing_path, "test", temp_dir)
+                test_angles.get_preprocessing()
 
         elif mol == "protein":
             if training_path != None:
-                train_angles = Protein_Prep(training_path, "train", temp_dir)
-                train_angles.get_list(training_path, "train", temp_dir)
-                train_angles.get_values(training_path, "train", temp_dir)
-                train_angles.get_csv("train", temp_dir, ["ETA", "THETA"])
+                train_angles = ProteinPrep(training_path, "train", temp_dir)
+                train_angles.get_preprocessing()
 
             if testing_path != None:
-                test_angles = Protein_Prep(testing_path, "test", temp_dir)
-                test_angles.get_list(testing_path, "test", temp_dir)
-                test_angles.get_values(testing_path, "test", temp_dir)
-                test_angles.get_csv("test", temp_dir, ["ETA", "THETA"])
+                test_angles = ProteinPrep(testing_path, "test", temp_dir)
+                test_angles.get_preprocessing()
 
     def data_process(self, temp_dir: str, method_name: str, init_clusters: int):
         if method_name == "mclust":
-            seq_process = R_clust(temp_dir)
+            seq_process = RClust(temp_dir)
             seq_process.train_model(temp_dir)
             seq_process.predict_seq(temp_dir)
 
         else:
-            seq_process = sklearn_clust(temp_dir, method_name, init_clusters)
+            seq_process = SklearnClust(temp_dir, method_name, init_clusters)
             seq_process.train_model(temp_dir, method_name, init_clusters)
             seq_process.predict_seq(temp_dir, method_name)
         
 
     def main(self):
 
-        self.setup_dir(self.temp_dir)
+        self.setup_dir(self.temp_dir, self.training_path)
         self.get_angles(self.training_path, self.testing_path, self.temp_dir, self.mol)
         self.data_process(self.temp_dir, self.method_name, self.init_clusters)
 
@@ -122,7 +117,7 @@ class Pipeline:
             "--mol",
             dest="mol",
             type=str,
-            choices=["prot", "rna"],
+            choices=["protein", "rna"],
             help="The type of biomolecule to process, protein or RNA",
         )
         args = parser.parse_args()

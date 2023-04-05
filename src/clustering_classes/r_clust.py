@@ -2,7 +2,7 @@ import os
 
 from src.clustering_classes.clustering_helper import Clustering
 
-class R_clust(Clustering):
+class RClust(Clustering):
 	def __init__(
 		self,
 		temp_dir: str,
