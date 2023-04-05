@@ -54,12 +54,12 @@ class Pipeline:
         list_pdb(dataset_path, data_type, temp_dir)
         if angle_names[0] == "PHI":
             os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt"
+                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt "
                 + f"-o {temp_dir}/{data_type}_values -p -f -t"
             )
         elif angle_names[0] == "ETA":
             os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt"
+                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt "
                 + f"-o {temp_dir}/{data_type}_values -R -p -f -t"
             )
         text_to_csv(f"{temp_dir}/{data_type}_values.txt", angle_names)

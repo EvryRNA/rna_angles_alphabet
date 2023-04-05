@@ -19,7 +19,4 @@ class Protein_Prep(Preprocess):
                 f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt "
                 + f"-o {temp_dir}/{data_type}_values -p -f -t"
             )
-
-
-if __name__ == "__main__":
-	a=0
+		

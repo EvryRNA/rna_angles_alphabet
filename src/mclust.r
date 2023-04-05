@@ -17,6 +17,19 @@ create_model <- function(dir) {
 }
 
 
+#Save the cluster figure
+save_png <- function(dir) {
+    # Open png file
+    path_png <- paste(dir, "mclust_cluster.png", sep = "/")
+    png(path_png)
+    # Create plot
+    path_model <- paste(dir, "mclust_model.Rds", sep = "/")
+    plot(readRDS(path_model), what = "classification")
+    # Close png file
+    invisible(dev.off())
+}
+
+
 # Load the model
 test_model <- function(dir) {
     path_load_model <- paste(dir, "mclust_model.Rds", sep = "/")
@@ -43,7 +56,7 @@ predict_labels <- function(load_model, dir) {
 }
 
 
-# Rearrange the test labels
+# Return a sequence from the labels
 arrange_labels <- function(test_labels, order_model_labels) {
     sequence <- ""
     for (i in 1:length(test_labels)) { # nolint: seq_linter.
@@ -54,26 +67,13 @@ arrange_labels <- function(test_labels, order_model_labels) {
 }
 
 
-#Save the cluster figure
-save_png <- function(load_model, dir) {
-    # Open png file
-    path_png <- paste(dir, "mclust_cluster.png", sep = "/")
-    png(path_png)
-    # Create plot
-    plot(load_model, what = "classification")
-    # Close png file
-    invisible(dev.off())
-}
-
-
 if (args[1] == "train") {
     create_model(temp_dir)
+    save_png(load_model, temp_dir)
 } else if (args[1] == "test") {
     load_model <- test_model(temp_dir)
     order_model_labels <- order_model(load_model)
 
     test_labels <- predict_labels(load_model, temp_dir)
     arrange_labels(test_labels, order_model_labels)
-
-    save_png(load_model, temp_dir)
 }
