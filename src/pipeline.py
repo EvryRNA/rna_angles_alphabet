@@ -110,7 +110,7 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "som"],
             default="dbscan",
             help="The custering method to use, kmeans needs nb_clusters",
         )

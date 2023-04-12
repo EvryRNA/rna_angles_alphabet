@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
+from sklearn_som.som import SOM
 
 from src.plot_helper import plot_cluster
 from src.utils import get_angle, labels_to_seq, load_model, save_model
@@ -28,6 +29,8 @@ class SklearnClust(Clustering):
 			model = KMeans(n_clusters=init_clusters, n_init="auto")
 		elif method_name == "hierarchical":
 			model = AgglomerativeClustering(n_clusters=None, linkage="ward", distance_threshold=2000)
+		elif method_name == "som":
+			model = SOM(m=2, n=2, dim=2)
 
 		cluster_model = model.fit(x_train)
 		labels = cluster_model.fit_predict(x_train)
