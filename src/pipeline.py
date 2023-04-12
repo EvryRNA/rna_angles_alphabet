@@ -1,15 +1,10 @@
 import argparse
 import os
 
-from src.clustering_method import (
-    dbscan_cluster,
-    hierarchical_cluster,
-    kmeans_cluster,
-    mean_shift_cluster,
-    predict_labels,
-)
-from src.utils import get_angle, labels_to_seq, list_pdb, text_to_csv
-
+from src.preprocessing_classes.rna_prep import RNAPrep
+from src.preprocessing_classes.protein_prep import ProteinPrep
+from src.clustering_classes.r_clust import RClust
+from src.clustering_classes.sklearn_clust import SklearnClust
 
 class Pipeline:
     def __init__(
@@ -17,7 +12,7 @@ class Pipeline:
         training_path: str,
         testing_path: str,
         temp_dir: str,
-        nb_clusters: int,
+        init_clusters: int,
         method_name: str,
         mol: str,
     ):
@@ -27,7 +22,7 @@ class Pipeline:
         self.training_path = training_path
         self.testing_path = testing_path
         self.temp_dir = temp_dir
-        self.nb_clusters = nb_clusters
+        self.init_clusters = init_clusters
         self.method_name = method_name
         self.mol = mol
 
@@ -38,88 +33,42 @@ class Pipeline:
         Args:
             :param temp_dir: the path of the temporary directory
         """
+        os.makedirs("models", exist_ok=True)
         os.makedirs(temp_dir, exist_ok=True)
+        for file in os.listdir(temp_dir):
+            os.remove(f"{temp_dir}/{file}")
+        
 
-    def get_values(self, dataset_path: str, data_type: str, temp_dir: str, angle_names: list):
-        """
-        Compute the angle values of the training dataset and store them in a csv
 
-        Args:
-            :param dataset_path: the path of the directory containing the pdb
-            :param data_type: either training or testing data
-            :param temp_dir: the path of the temporary directory
-            :param angle_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-        """
-        list_pdb(dataset_path, data_type, temp_dir)
-        if angle_names[0] == "PHI":
-            os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt "
-                + f"-o {temp_dir}/{data_type}_values -p -f -t"
-            )
-        elif angle_names[0] == "ETA":
-            os.system(
-                f"src/c_code/angle -d {dataset_path}/ -l {temp_dir}/{data_type}_list.txt "
-                + f"-o {temp_dir}/{data_type}_values -R -p -f -t"
-            )
-        text_to_csv(f"{temp_dir}/{data_type}_values.txt", angle_names)
+    def get_angles(self, training_path: str, testing_path: str, temp_dir: str, mol: str):
+        class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
-    def train_model(
-        self,
-        method_name: str,
-        nb_clusters: int,
-        temp_dir: str,
-    ):
-        """
-        Train a model with the training values
+        if training_path is not None:
+            train_angles = class_molecule(training_path, "train", temp_dir)
+            train_angles.get_preprocessing()
 
-        Args:
-            :param method_name: the name of the clustering method to use
-            :param nb_clusters: the number of clusters to be used by some methods
-            :param temp_dir: the path of the temporary directory
-        """
-        x = get_angle(f"{temp_dir}/train_values.csv")
+        test_angles = class_molecule(testing_path, "test", temp_dir)
+        test_angles.get_preprocessing()
 
-        if method_name == "dbscan":
-            dbscan_cluster(x, temp_dir)
-        elif method_name == "mean_shift":
-            mean_shift_cluster(x, temp_dir)
-        elif method_name == "kmeans":
-            kmeans_cluster(x, nb_clusters, temp_dir)
-        elif method_name == "hierarchical":
-            hierarchical_cluster(x, temp_dir)
 
-    def get_sequence(self, method_name: str, temp_dir: str):
-        """
-        Fit the testing values on the train model and get a representative sequence
+    def data_process(self, temp_dir: str, method_name: str, mol: str, init_clusters: int):
+        if method_name == "mclust":
+            seq_process = RClust(temp_dir, mol)
+            seq_process.train_model(temp_dir, mol)
+            seq_process.predict_seq(temp_dir, mol)
 
-        Args:
-            :param method_name: the name of the clustering method used
-            :param temp_dir: the path of the temporary directory
-        """
-        x = get_angle(f"{temp_dir}/test_values.csv")
-        labels = list(predict_labels(x, method_name, temp_dir))
-        seq = labels_to_seq(labels)
-        print(seq)
+        else:
+            seq_process = SklearnClust(temp_dir, method_name, init_clusters)
+            seq_process.train_model(temp_dir, method_name, mol, init_clusters)
+            seq_process.predict_seq(temp_dir, method_name, mol)
+        
 
     def main(self):
-        if self.mol == "prot":
-            angles_names = ["PHI", "PSI"]
-        elif self.mol == "rna":
-            angles_names = ["ETA", "THETA"]
 
-        if self.method_name == "mclust":
-            self.setup_dir(self.temp_dir)
-            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
-            os.system(f"Rscript src/mclust.r train {self.temp_dir}")
-            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
-            os.system(f"Rscript src/mclust.r test {self.temp_dir}")
-        else:
-            self.setup_dir(self.temp_dir)
-            self.get_values(self.training_path, "train", self.temp_dir, angles_names)
-            self.train_model(self.method_name, self.nb_clusters, self.temp_dir)
-            self.get_values(self.testing_path, "test", self.temp_dir, angles_names)
-            self.get_sequence(self.method_name, self.temp_dir)
+        self.setup_dir(self.temp_dir)
+        self.get_angles(self.training_path, self.testing_path, self.temp_dir, self.mol)
+        self.data_process(self.temp_dir, self.method_name, self.mol, self.init_clusters)
+
 
     @staticmethod
     def get_arguments():
@@ -152,18 +101,18 @@ class Pipeline:
             help="The custering method to use, kmeans needs nb_clusters",
         )
         parser.add_argument(
-            "--nb_clusters",
-            dest="nb_clusters",
+            "--init_clusters",
+            dest="init_clusters",
             type=int,
             choices=range(2, 8),
             default=7,
-            help="The number of clusters used by some clustering method",
+            help="The number of clusters required by some clustering method",
         )
         parser.add_argument(
             "--mol",
             dest="mol",
             type=str,
-            choices=["prot", "rna"],
+            choices=["protein", "rna"],
             help="The type of biomolecule to process, protein or RNA",
         )
         args = parser.parse_args()

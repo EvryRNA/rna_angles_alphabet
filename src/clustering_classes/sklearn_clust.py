@@ -17,7 +17,7 @@ class SklearnClust(Clustering):
 		self.init_clusters = init_clusters,
 		super().__init__()
 		
-	def train_model(self, temp_dir: str, method_name: str, init_clusters: int):
+	def train_model(self, temp_dir: str, method_name: str, mol: str, init_clusters: int):
 		x_train = get_angle(f"{temp_dir}/train_values.csv")
 
 		if method_name == "dbscan":
@@ -35,14 +35,14 @@ class SklearnClust(Clustering):
 
 		print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
 
-		save_model(f"models/{method_name}_model.pickle", cluster_model)
-		plot_cluster(x_train, labels + 1, nb_clusters, method_name, temp_dir)
+		save_model(f"models/{method_name}_{mol}_model.pickle", cluster_model)
+		plot_cluster(x_train, labels + 1, nb_clusters, method_name, mol)
 		
 
-	def predict_seq(self, temp_dir: str, method_name: str):
+	def predict_seq(self, temp_dir: str, method_name: str, mol: str):
 		x_test = get_angle(f"{temp_dir}/test_values.csv")
 
-		predict_model = load_model(f"models/{method_name}_model.pickle")
+		predict_model = load_model(f"models/{method_name}_{mol}_model.pickle")
 		labels = list(predict_model.fit_predict(x_test))
 		seq = labels_to_seq(labels)
 		print(seq)

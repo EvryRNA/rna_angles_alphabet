@@ -4,38 +4,39 @@ library(mclust)
 
 args <- commandArgs(trailingOnly = TRUE)
 temp_dir <- args[2]
+mol <- args[3]
 
 
 # Create the model
-create_model <- function(dir) {
+create_model <- function(dir, mol) {
     path_train_data <- paste(dir, "train_values.csv", sep = "/")
     train_data <- read.csv(file = path_train_data)
 
     model_mclust <- Mclust(train_data)
-    path_save_model <- paste("models/mclust_model.Rds", sep = "/")
+    path_save_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
     saveRDS(model_mclust, path_save_model)
 }
 
 
 #Save the cluster figure
-save_png <- function(dir) {
+save_png <- function(dir, mol) {
     # Open png file
-    path_png <- paste(dir, "mclust_cluster.png", sep = "/")
+    path_png <- paste("models/mclust_", mol, "_cluster.png", sep = "")
     png(path_png)
     # Create plot
-    path_model <- paste("models/mclust_model.Rds", sep = "/")
+    path_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
     plot(readRDS(path_model), what = "classification")
     # Close png file
     invisible(dev.off())
-    png_path <- paste("\nClustering save: ", dir,
-    "/mclust_cluster.png\n\n", sep = "")
-    cat(png_path)
+    path_save_png <- paste("\nClustering save: models/mclust_",
+    mol, "_cluster.png\n\n", sep = "")
+    cat(path_save_png)
 }
 
 
 # Load the model
-test_model <- function(dir) {
-    path_load_model <- paste("models/mclust_model.Rds", sep = "/")
+test_model <- function(dir, mol) {
+    path_load_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
     load_model <- readRDS(path_load_model)
     print(summary(load_model))
     return(load_model)
@@ -71,10 +72,10 @@ arrange_labels <- function(test_labels, order_model_labels) {
 
 
 if (args[1] == "train") {
-    create_model(temp_dir)
-    save_png(temp_dir)
+    create_model(temp_dir, mol)
+    save_png(temp_dir, mol)
 } else if (args[1] == "test") {
-    load_model <- test_model(temp_dir)
+    load_model <- test_model(temp_dir, mol)
     order_model_labels <- order_model(load_model)
 
     test_labels <- predict_labels(load_model, temp_dir)
