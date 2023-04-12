@@ -15,6 +15,7 @@ class Pipeline:
         init_clusters: int,
         method_name: str,
         mol: str,
+        model_path: str
     ):
         """
         Initialize the different attributes
@@ -25,6 +26,7 @@ class Pipeline:
         self.init_clusters = init_clusters
         self.method_name = method_name
         self.mol = mol
+        self.model_path = model_path
 
     def setup_dir(self, temp_dir: str):
         """
@@ -40,18 +42,28 @@ class Pipeline:
         
 
 
-    def get_angles(self, training_path: str, testing_path: str, temp_dir: str, mol: str):
+    def get_angles(self, training_path: str, testing_path: str, temp_dir: str,
+                   mol: str):
         class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
-        if training_path is not None:
-            train_angles = class_molecule(training_path, "train", temp_dir)
-            train_angles.get_preprocessing()
+        train_angles = class_molecule(training_path, "train", temp_dir)
+        train_angles.get_preprocessing()
 
         test_angles = class_molecule(testing_path, "test", temp_dir)
         test_angles.get_preprocessing()
 
 
     def data_process(self, temp_dir: str, method_name: str, mol: str, init_clusters: int):
+        # class_cluster = RClust if method_name == "mclust" else SklearnClust
+        # seq_process = class_cluster(temp_dir, method_name, mol, init_clusters)
+
+        # if model_path is None:
+        #     model_path = seq_process.train_model(temp_dir, method_name,
+        #                                           mol, init_clusters)
+
+        # seq_process.predict_seq(temp_dir, model_path)
+
+
         if method_name == "mclust":
             seq_process = RClust(temp_dir, mol)
             seq_process.train_model(temp_dir, mol)
@@ -77,12 +89,14 @@ class Pipeline:
             "--training_path",
             dest="training_path",
             type=str,
+            default=None,
             help="The path to the directory with the training data",
         )
         parser.add_argument(
             "--testing_path",
             dest="testing_path",
             type=str,
+            default=None,
             help="The path to the directory with the testing data",
         )
         parser.add_argument(
@@ -90,7 +104,7 @@ class Pipeline:
             dest="temp_dir",
             type=str,
             default="tmp",
-            help="The path to the directory used for the temporary files",
+            help="The path to the directory used for temporary files",
         )
         parser.add_argument(
             "--method",
@@ -114,6 +128,13 @@ class Pipeline:
             type=str,
             choices=["protein", "rna"],
             help="The type of biomolecule to process, protein or RNA",
+        )
+        parser.add_argument(
+            "--model",
+            dest="model_path",
+            type=str,
+            default=None,
+            help="The path to an existing model in pickle or Rds format",
         )
         args = parser.parse_args()
         return args
