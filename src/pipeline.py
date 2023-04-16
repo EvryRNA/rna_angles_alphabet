@@ -43,43 +43,50 @@ class Pipeline:
 
 
     def get_angles(self, training_path: str, testing_path: str, temp_dir: str,
-                   mol: str):
+                   mol: str, model_path: str):
         class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
-        train_angles = class_molecule(training_path, "train", temp_dir)
-        train_angles.get_preprocessing()
+        if model_path is None:
+            train_angles = class_molecule(training_path, "train", temp_dir)
+            train_angles.get_preprocessing()
 
         test_angles = class_molecule(testing_path, "test", temp_dir)
         test_angles.get_preprocessing()
 
 
-    def data_process(self, temp_dir: str, method_name: str, mol: str, init_clusters: int):
-        # class_cluster = RClust if method_name == "mclust" else SklearnClust
-        # seq_process = class_cluster(temp_dir, method_name, mol, init_clusters)
+    def data_process(self, temp_dir: str, method_name: str, mol: str, model_path: str, 
+                     init_clusters: int):
+        class_cluster = RClust if method_name == "mclust" else SklearnClust
+        seq_process = class_cluster(temp_dir, method_name, init_clusters)
 
-        # if model_path is None:
-        #     model_path = seq_process.train_model(temp_dir, method_name,
-        #                                           mol, init_clusters)
+        if model_path is None and method_name != "mclust":
+            model_path = seq_process.train_model(temp_dir, method_name, 
+                                                 mol, init_clusters)
+            
+        elif method_name == "mclust":
+            print("MClust not implemented yet")
+        
+        seq_process.predict_seq(temp_dir, model_path)
 
-        # seq_process.predict_seq(temp_dir, model_path)
 
+        # if method_name == "mclust":
+        #     seq_process = RClust(temp_dir, mol)
+        #     seq_process.train_model(temp_dir, mol)
+        #     seq_process.predict_seq(temp_dir, mol)
 
-        if method_name == "mclust":
-            seq_process = RClust(temp_dir, mol)
-            seq_process.train_model(temp_dir, mol)
-            seq_process.predict_seq(temp_dir, mol)
-
-        else:
-            seq_process = SklearnClust(temp_dir, method_name, init_clusters)
-            seq_process.train_model(temp_dir, method_name, mol, init_clusters)
-            seq_process.predict_seq(temp_dir, method_name, mol)
+        # else:
+        #     seq_process = SklearnClust(temp_dir, method_name, init_clusters)
+        #     seq_process.train_model(temp_dir, method_name, mol, init_clusters)
+        #     seq_process.predict_seq(temp_dir, method_name, mol)
         
 
     def main(self):
 
         self.setup_dir(self.temp_dir)
-        self.get_angles(self.training_path, self.testing_path, self.temp_dir, self.mol)
-        self.data_process(self.temp_dir, self.method_name, self.mol, self.init_clusters)
+        self.get_angles(self.training_path, self.testing_path, self.temp_dir,
+                         self.mol, self.model_path)
+        self.data_process(self.temp_dir, self.method_name, self.mol, self.model_path,
+                         self.init_clusters)
 
 
     @staticmethod
@@ -127,6 +134,7 @@ class Pipeline:
             dest="mol",
             type=str,
             choices=["protein", "rna"],
+            required=True,
             help="The type of biomolecule to process, protein or RNA",
         )
         parser.add_argument(

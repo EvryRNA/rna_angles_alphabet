@@ -40,12 +40,14 @@ class SklearnClust(Clustering):
 
 		save_model(f"models/{method_name}_{mol}_model.pickle", cluster_model)
 		plot_cluster(x_train, labels + 1, nb_clusters, method_name, mol)
+
+		return f"models/{method_name}_{mol}_model.pickle"
 		
 
-	def predict_seq(self, temp_dir: str, method_name: str, mol: str):
+	def predict_seq(self, temp_dir: str, model_path: str):
 		x_test = get_angle(f"{temp_dir}/test_values.csv")
 
-		predict_model = load_model(f"models/{method_name}_{mol}_model.pickle")
+		predict_model = load_model(model_path)
 		labels = list(predict_model.fit_predict(x_test))
 		seq = labels_to_seq(labels)
 		print(seq)

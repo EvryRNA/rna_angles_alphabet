@@ -6,7 +6,7 @@ class RClust(Clustering):
 	def __init__(
 		self,
 		temp_dir: str,
-		mol: str
+		mol: str,
 	):
 		self.temp_dir = temp_dir,
 		self.mol = mol,
