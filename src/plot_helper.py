@@ -43,11 +43,7 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
         :param method: name of the clustering method used
         :param temp_dir: the path of the temporary directory
     """
-    if nb_clusters <= 7:
-        colors = ["k", "r", "g", "b", "y", "m", "c"]
-
-    elif nb_clusters > 7:
-        colors = get_colors(nb_clusters)
+    colors = get_colors(nb_clusters)
 
     for i in range(0, nb_clusters):
         filter = f"label{i} = x[label == {i}]"
@@ -63,7 +59,7 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
     plt.yticks(np.arange(0, 361, 36))
     plt.savefig(f"models/{method}_{mol}_cluster.png")
 
-    print(f"Clustering save: models/{method}_{mol}_cluster.png\n")
+    print(f"Clustering saved in models/{method}_{mol}_cluster.png\n")
 
 
 def get_colors(nb_colors: int):
@@ -73,10 +69,12 @@ def get_colors(nb_colors: int):
     Args:
         :param nb_colors: the number of colors to return
     """
-    colors = ["k"]
-    list_colors = mcolors.CSS4_COLORS
+    colors = ["k", "r", "g", "b", "y", "m", "c"]
 
-    for i in range(1, nb_colors):
-        colors.append(random.choice(list(list_colors.keys())))
+    if nb_colors > 7 :
+        list_colors = mcolors.CSS4_COLORS
+        
+        for i in range(0, nb_colors - 7):
+            colors.append(random.choice(list(list_colors.keys())))
 
     return colors

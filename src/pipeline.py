@@ -42,8 +42,18 @@ class Pipeline:
         
 
 
-    def get_angles(self, training_path: str, testing_path: str, temp_dir: str,
+    def get_angles(self, temp_dir: str, training_path: str, testing_path: str,
                    mol: str, model_path: str):
+        """
+        Get the angles values in a csv
+
+        Args:
+            :param temp_dir: the path of the temporary directory
+            :param training_path: the path of the training data
+            :param testing_path: the path of the testing data
+            :param mol: the type of biomolecule, protein or rna
+            :param model_path: if a model is not given, process the training data
+        """
         class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
         if model_path is None:
@@ -56,34 +66,34 @@ class Pipeline:
 
     def data_process(self, temp_dir: str, method_name: str, mol: str, model_path: str, 
                      init_clusters: int):
-        class_cluster = RClust if method_name == "mclust" else SklearnClust
-        seq_process = class_cluster(temp_dir, method_name, init_clusters)
+        """
+        Train the model, fit the testing data and return the sequence
+
+        Args:
+            :param temp_dir: the path of the temporary directory
+            :param method_name: the name of the clustering method to use
+            :param mol: the type of biomolecule, protein or rna
+            :param model_path: if a model is not given, train a new model
+            :param init_clusters: some methods require a number of clusters
+        """
+        class_cluster = RClust if (method_name == "mclust" or model_path[-4:] == ".Rds") else SklearnClust
+
+        seq_process = class_cluster(temp_dir, mol)
 
         if model_path is None and method_name != "mclust":
-            model_path = seq_process.train_model(temp_dir, method_name, 
-                                                 mol, init_clusters)
+            model_path = seq_process.train_model(temp_dir, mol, method_name,
+                                                  init_clusters)
             
-        elif method_name == "mclust":
-            print("MClust not implemented yet")
+        elif model_path is None and method_name == "mclust":
+            model_path = seq_process.train_model(temp_dir, mol)
         
         seq_process.predict_seq(temp_dir, model_path)
 
 
-        # if method_name == "mclust":
-        #     seq_process = RClust(temp_dir, mol)
-        #     seq_process.train_model(temp_dir, mol)
-        #     seq_process.predict_seq(temp_dir, mol)
-
-        # else:
-        #     seq_process = SklearnClust(temp_dir, method_name, init_clusters)
-        #     seq_process.train_model(temp_dir, method_name, mol, init_clusters)
-        #     seq_process.predict_seq(temp_dir, method_name, mol)
-        
-
     def main(self):
 
         self.setup_dir(self.temp_dir)
-        self.get_angles(self.training_path, self.testing_path, self.temp_dir,
+        self.get_angles(self.temp_dir, self.training_path, self.testing_path,
                          self.mol, self.model_path)
         self.data_process(self.temp_dir, self.method_name, self.mol, self.model_path,
                          self.init_clusters)
@@ -117,7 +127,8 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "som"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust",
+                     "som", "outlier"],
             default="dbscan",
             help="The custering method to use, kmeans needs nb_clusters",
         )

@@ -4,7 +4,6 @@ library(mclust)
 
 args <- commandArgs(trailingOnly = TRUE)
 temp_dir <- args[2]
-mol <- args[3]
 
 
 # Create the model
@@ -35,9 +34,8 @@ save_png <- function(dir, mol) {
 
 
 # Load the model
-test_model <- function(dir, mol) {
-    path_load_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
-    load_model <- readRDS(path_load_model)
+test_model <- function(dir, model_path) {
+    load_model <- readRDS(model_path)
     print(summary(load_model))
     return(load_model)
 }
@@ -72,10 +70,12 @@ arrange_labels <- function(test_labels, order_model_labels) {
 
 
 if (args[1] == "train") {
+    mol <- args[3]
     create_model(temp_dir, mol)
     save_png(temp_dir, mol)
 } else if (args[1] == "test") {
-    load_model <- test_model(temp_dir, mol)
+    model_path <- args[3]
+    load_model <- test_model(temp_dir, model_path)
     order_model_labels <- order_model(load_model)
 
     test_labels <- predict_labels(load_model, temp_dir)

@@ -14,6 +14,8 @@ class RClust(Clustering):
 		
 	def train_model(self, temp_dir: str, mol: str):
 		os.system(f"Rscript src/mclust.r train {temp_dir} {mol}")
+
+		return f"models/mclust_{mol}_model.Rds"
 		
-	def predict_seq(self, temp_dir: str, mol: str):
-		os.system(f"Rscript src/mclust.r test {temp_dir} {mol}")
+	def predict_seq(self, temp_dir: str, model_path: str):
+		os.system(f"Rscript src/mclust.r test {temp_dir} {model_path}")
