@@ -1,5 +1,8 @@
 import argparse
 import os
+import sys
+from typing import Optional
+from src.clustering_classes.clustering_helper import Clustering
 
 from src.preprocessing_classes.rna_prep import RNAPrep
 from src.preprocessing_classes.protein_prep import ProteinPrep
@@ -12,7 +15,6 @@ class Pipeline:
         training_path: str,
         testing_path: str,
         temp_dir: str,
-        init_clusters: int,
         method_name: str,
         mol: str,
         model_path: str
@@ -23,7 +25,6 @@ class Pipeline:
         self.training_path = training_path
         self.testing_path = testing_path
         self.temp_dir = temp_dir
-        self.init_clusters = init_clusters
         self.method_name = method_name
         self.mol = mol
         self.model_path = model_path
@@ -41,9 +42,8 @@ class Pipeline:
             os.remove(f"{temp_dir}/{file}")
         
 
-
-    def get_angles(self, temp_dir: str, training_path: str, testing_path: str,
-                   mol: str, model_path: str):
+    def get_angles(self, temp_dir: str, training_path: Optional[str],
+                   testing_path: Optional[str], mol: str, model_path: Optional[str]):
         """
         Get the angles values in a csv
 
@@ -57,15 +57,52 @@ class Pipeline:
         class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
         if model_path is None:
-            train_angles = class_molecule(training_path, "train", temp_dir)
-            train_angles.get_preprocessing()
+            if training_path is None:
+                sys.exit("Error: No training nor model path given!")
+            else:
+                train_angles = class_molecule(training_path, "train", temp_dir)
+                train_angles.get_preprocessing()
+                if testing_path is not None:
+                    test_angles = class_molecule(testing_path, "test", temp_dir)
+                    test_angles.get_preprocessing()
 
-        test_angles = class_molecule(testing_path, "test", temp_dir)
-        test_angles.get_preprocessing()
+        elif model_path is not None and testing_path is None:
+            sys.exit("Error: No testing path given!")
+
+        else:
+            test_angles = class_molecule(testing_path, "test", temp_dir)
+            test_angles.get_preprocessing()
 
 
-    def data_process(self, temp_dir: str, method_name: str, mol: str, model_path: str, 
-                     init_clusters: int):
+    def initialize_clustering_model(self, method_name:  Optional[str], 
+                     model_path: Optional[str]) -> Clustering:
+        """
+        Initialise the clustering class with either R or Sklearn model.
+        Args
+            :param method_name: the name of the clustering method to use
+            :param model_path: if a model is not given, train a new model
+        Returns:
+            :return the class of the clustering model
+        """
+        if model_path is not None:
+            if model_path.endswith(".pickle"):
+                class_cluster = SklearnClust
+            elif model_path.endswith(".Rds"):
+                class_cluster = RClust
+            else:
+                sys.exit(f"FORMAT FILE NOT GOOD : \"{model_path}\", use .pickle or .Rds")
+
+        else:
+            if method_name is not None:
+                class_cluster = RClust if method_name == "mclust" else SklearnClust
+            else:
+                sys.exit("Error: No model path nor method name given!")
+
+        return class_cluster
+
+
+    def fit_data(self, temp_dir: str, method_name:  Optional[str], mol: str, 
+                     model_path: Optional[str]):
         """
         Train the model, fit the testing data and return the sequence
 
@@ -74,20 +111,15 @@ class Pipeline:
             :param method_name: the name of the clustering method to use
             :param mol: the type of biomolecule, protein or rna
             :param model_path: if a model is not given, train a new model
-            :param init_clusters: some methods require a number of clusters
         """
-        class_cluster = RClust if (method_name == "mclust" or model_path[-4:] == ".Rds") else SklearnClust
-
+        class_cluster = self.initialize_clustering_model(method_name, model_path)
         seq_process = class_cluster(temp_dir, mol)
 
-        if model_path is None and method_name != "mclust":
-            model_path = seq_process.train_model(temp_dir, mol, method_name,
-                                                  init_clusters)
-            
-        elif model_path is None and method_name == "mclust":
-            model_path = seq_process.train_model(temp_dir, mol)
-        
-        seq_process.predict_seq(temp_dir, model_path)
+        if model_path is None:
+            params = {"method_name": method_name}
+            model_path = seq_process.train_model(**params)
+    
+        seq_process.predict_seq(model_path)
 
 
     def main(self):
@@ -95,8 +127,7 @@ class Pipeline:
         self.setup_dir(self.temp_dir)
         self.get_angles(self.temp_dir, self.training_path, self.testing_path,
                          self.mol, self.model_path)
-        self.data_process(self.temp_dir, self.method_name, self.mol, self.model_path,
-                         self.init_clusters)
+        self.fit_data(self.temp_dir, self.method_name, self.mol, self.model_path)
 
 
     @staticmethod
@@ -129,16 +160,8 @@ class Pipeline:
             type=str,
             choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust",
                      "som", "outlier"],
-            default="dbscan",
+            default=None,
             help="The custering method to use, kmeans needs nb_clusters",
-        )
-        parser.add_argument(
-            "--init_clusters",
-            dest="init_clusters",
-            type=int,
-            choices=range(2, 8),
-            default=7,
-            help="The number of clusters required by some clustering method",
         )
         parser.add_argument(
             "--mol",
