@@ -61,25 +61,25 @@ class Pipeline:
             if training_path is None:
                 sys.exit("Error: No training nor model path given!")
             else:
-                train_angles = class_molecule(training_path, "train", temp_dir)
-                train_angles.get_preprocessing()
+                train_angles = class_molecule()
+                train_angles.get_values(training_path, "train", temp_dir)
                 if testing_path is not None:
-                    test_angles = class_molecule(testing_path, "test", temp_dir)
-                    test_angles.get_preprocessing()
+                    test_angles = class_molecule()
+                    test_angles.get_values(testing_path, "test", temp_dir)
 
         elif model_path is not None and testing_path is None:
             sys.exit("Error: No testing path given!")
 
         else:
-            test_angles = class_molecule(testing_path, "test", temp_dir)
-            test_angles.get_preprocessing()
+            test_angles = class_molecule()
+            test_angles.get_values(testing_path, "test", temp_dir)
 
 
     def initialize_clustering_model(self, method_name:  Optional[str], 
                      model_path: Optional[str]) -> Clustering:
         """
         Initialise the clustering class with either R or Sklearn model.
-        Args
+        Args:
             :param method_name: the name of the clustering method to use
             :param model_path: if a model is not given, train a new model
         Returns:

@@ -9,9 +9,14 @@ temp_dir <- args[2]
 # Create the model
 create_model <- function(dir, mol) {
     path_train_data <- paste(dir, "train_values.csv", sep = "/")
-    train_data <- read.csv(file = path_train_data)
+    train_data <- read.csv(file = path_train_data, colClasses = c("numeric",
+    "numeric", "NULL", "NULL", "NULL"))
+    train_data <- na.omit(train_data)
 
-    model_mclust <- Mclust(train_data)
+    model_mclust <- Mclust(train_data, G = NULL, modelNames = NULL,
+    prior = NULL, control = emControl(), initialization = NULL,
+    warn = mclust.options("warn"), x =  NULL, verbose = interactive())
+
     path_save_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
     saveRDS(model_mclust, path_save_model)
 }
@@ -52,7 +57,11 @@ order_model <- function(load_model) {
 # Predict the test labels
 predict_labels <- function(load_model, dir) {
     path_test_data <- paste(dir, "test_values.csv", sep = "/")
-    test_data <- read.csv(file = path_test_data)
+
+    test_data <- read.csv(file = path_test_data, colClasses = c("numeric",
+    "numeric", "NULL", "NULL", "NULL"))
+    test_data <- na.omit(test_data)
+
     test_labels <- predict(load_model, test_data)$classification
     return(test_labels)
 }
