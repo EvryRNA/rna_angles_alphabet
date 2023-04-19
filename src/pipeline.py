@@ -37,6 +37,7 @@ class Pipeline:
             :param temp_dir: the path of the temporary directory
         """
         os.makedirs("models", exist_ok=True)
+        os.makedirs("figures_clust", exist_ok=True)
         os.makedirs(temp_dir, exist_ok=True)
         for file in os.listdir(temp_dir):
             os.remove(f"{temp_dir}/{file}")
@@ -119,7 +120,8 @@ class Pipeline:
             params = {"method_name": method_name}
             model_path = seq_process.train_model(**params)
     
-        seq_process.predict_seq(model_path)
+        if self.testing_path is not None:
+            seq_process.predict_seq(model_path)
 
 
     def main(self):

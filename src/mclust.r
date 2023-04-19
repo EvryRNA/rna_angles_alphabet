@@ -20,14 +20,14 @@ create_model <- function(dir, mol) {
 #Save the cluster figure
 save_png <- function(dir, mol) {
     # Open png file
-    path_png <- paste("models/mclust_", mol, "_cluster.png", sep = "")
+    path_png <- paste("figures_clust/mclust_", mol, "_cluster.png", sep = "")
     png(path_png)
     # Create plot
     path_model <- paste("models/mclust_", mol, "_model.Rds", sep = "")
     plot(readRDS(path_model), what = "classification")
     # Close png file
     invisible(dev.off())
-    path_save_png <- paste("\nClustering save: models/mclust_",
+    path_save_png <- paste("\nClustering save: figures_clust/mclust_",
     mol, "_cluster.png\n\n", sep = "")
     cat(path_save_png)
 }

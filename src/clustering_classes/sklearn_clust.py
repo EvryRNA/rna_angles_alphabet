@@ -34,6 +34,11 @@ class SklearnClust(Clustering):
 		if method_name == "dbscan":
 			labels += 1
 
+		elif method_name == "outlier":
+			for i in range(0, len(labels)):
+				if labels[i] == -1:
+					labels[i] = 0
+
 		print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
 		print(f"Model saved in models/{method_name}_{self.mol}_model.pickle", "\n")
 

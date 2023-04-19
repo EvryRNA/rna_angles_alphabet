@@ -57,9 +57,9 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
-    plt.savefig(f"models/{method}_{mol}_cluster.png")
+    plt.savefig(f"figures_clust/{method}_{mol}_cluster.png")
 
-    print(f"Clustering saved in models/{method}_{mol}_cluster.png\n")
+    print(f"Clustering saved in figures_clust/{method}_{mol}_cluster.png\n")
 
 
 def get_colors(nb_colors: int):
