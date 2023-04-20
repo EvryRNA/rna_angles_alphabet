@@ -24,7 +24,7 @@ def raw_data_plot(path: str, mol: str):
 
     if mol == "rna":
         angle_names = ["η", "θ"]
-    elif mol =="protein":
+    elif mol == "protein":
         angle_names = ["φ", "ψ"]
     else:
         print("\nWrong molecule type given\n")
@@ -81,9 +81,9 @@ def get_colors(nb_colors: int):
     """
     colors = ["k", "r", "g", "b", "y", "m", "c"]
 
-    if nb_colors > 7 :
+    if nb_colors > 7:
         list_colors = mcolors.CSS4_COLORS
-        
+
         for i in range(0, nb_colors - 7):
             colors.append(random.choice(list(list_colors.keys())))
 

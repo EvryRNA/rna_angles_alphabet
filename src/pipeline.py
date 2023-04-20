@@ -1,14 +1,14 @@
 import argparse
 import os
 import sys
-from typing import Optional
-from src.plot_helper import raw_data_plot
-from src.clustering_classes.clustering_helper import Clustering
+from typing import Any, Optional
 
-from src.preprocessing_classes.rna_prep import RNAPrep
-from src.preprocessing_classes.protein_prep import ProteinPrep
 from src.clustering_classes.r_clust import RClust
 from src.clustering_classes.sklearn_clust import SklearnClust
+from src.plot_helper import raw_data_plot
+from src.preprocessing_classes.protein_prep import ProteinPrep
+from src.preprocessing_classes.rna_prep import RNAPrep
+
 
 class Pipeline:
     def __init__(
@@ -19,7 +19,7 @@ class Pipeline:
         method_name: str,
         mol: str,
         model_path: str,
-        visu_raw: bool
+        visu_raw: bool,
     ):
         """
         Initialize the different attributes
@@ -44,10 +44,15 @@ class Pipeline:
         os.makedirs(temp_dir, exist_ok=True)
         for file in os.listdir(temp_dir):
             os.remove(f"{temp_dir}/{file}")
-        
 
-    def get_angles(self, temp_dir: str, training_path: Optional[str],
-                   testing_path: Optional[str], mol: str, model_path: Optional[str]):
+    def get_angles(
+        self,
+        temp_dir: str,
+        training_path: Optional[str],
+        testing_path: Optional[str],
+        mol: str,
+        model_path: Optional[str],
+    ):
         """
         Get the angles values of a dataset in a csv
 
@@ -81,9 +86,7 @@ class Pipeline:
         if self.visu_raw and training_path is not None:
             raw_data_plot(f"{temp_dir}/train_values.csv", mol)
 
-
-    def initialize_clustering_model(self, method_name:  Optional[str], 
-                     model_path: Optional[str]) -> Clustering:
+    def initialize_clustering_model(self, method_name: Optional[str], model_path: Optional[str]):
         """
         Initialize the clustering class with either R or Sklearn model
 
@@ -93,13 +96,15 @@ class Pipeline:
         Returns:
             :return the class of the clustering model
         """
+        class_cluster = Any
+
         if model_path is not None:
             if model_path.endswith(".pickle"):
                 class_cluster = SklearnClust
             elif model_path.endswith(".Rds"):
                 class_cluster = RClust
             else:
-                sys.exit(f"FORMAT FILE NOT GOOD : \"{model_path}\", use .pickle or .Rds")
+                sys.exit(f'FORMAT FILE NOT GOOD : "{model_path}", use .pickle or .Rds')
 
         else:
             if method_name is not None:
@@ -109,9 +114,9 @@ class Pipeline:
 
         return class_cluster
 
-
-    def fit_data(self, temp_dir: str, method_name:  Optional[str], mol: str, 
-                     model_path: Optional[str]):
+    def fit_data(
+        self, temp_dir: str, method_name: Optional[str], mol: str, model_path: Optional[str]
+    ):
         """
         Train the model, fit the testing data and print the sequence
 
@@ -127,18 +132,16 @@ class Pipeline:
         if model_path is None:
             params = {"method_name": method_name}
             model_path = seq_process.train_model(**params)
-    
+
         if self.testing_path is not None:
             seq_process.predict_seq(model_path)
 
-
     def main(self):
-
         self.setup_dir(self.temp_dir)
-        self.get_angles(self.temp_dir, self.training_path, self.testing_path,
-                         self.mol, self.model_path)
+        self.get_angles(
+            self.temp_dir, self.training_path, self.testing_path, self.mol, self.model_path
+        )
         self.fit_data(self.temp_dir, self.method_name, self.mol, self.model_path)
-
 
     @staticmethod
     def get_arguments():
@@ -168,8 +171,7 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust",
-                     "som", "outlier"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "som", "outlier"],
             default=None,
             help="The custering method to use, kmeans needs nb_clusters",
         )
