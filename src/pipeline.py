@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 from typing import Optional
+from src.plot_helper import raw_data_plot
 from src.clustering_classes.clustering_helper import Clustering
 
 from src.preprocessing_classes.rna_prep import RNAPrep
@@ -17,7 +18,8 @@ class Pipeline:
         temp_dir: str,
         method_name: str,
         mol: str,
-        model_path: str
+        model_path: str,
+        visu_raw: bool
     ):
         """
         Initialize the different attributes
@@ -28,6 +30,7 @@ class Pipeline:
         self.method_name = method_name
         self.mol = mol
         self.model_path = model_path
+        self.visu_raw = visu_raw
 
     def setup_dir(self, temp_dir: str):
         """
@@ -63,6 +66,7 @@ class Pipeline:
             else:
                 train_angles = class_molecule()
                 train_angles.get_values(training_path, "train", temp_dir)
+
                 if testing_path is not None:
                     test_angles = class_molecule()
                     test_angles.get_values(testing_path, "test", temp_dir)
@@ -73,6 +77,9 @@ class Pipeline:
         else:
             test_angles = class_molecule()
             test_angles.get_values(testing_path, "test", temp_dir)
+
+        if self.visu_raw and training_path is not None:
+            raw_data_plot(f"{temp_dir}/train_values.csv", mol)
 
 
     def initialize_clustering_model(self, method_name:  Optional[str], 
@@ -179,6 +186,13 @@ class Pipeline:
             type=str,
             default=None,
             help="The path to an existing model in pickle or Rds format",
+        )
+        parser.add_argument(
+            "--v",
+            dest="visu_raw",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            help="Plot the raw data, requires a training path",
         )
         args = parser.parse_args()
         return args

@@ -7,28 +7,38 @@ import numpy as np
 from src.utils import get_angle
 
 
-def raw_angle(path: str):
+def raw_data_plot(path: str, mol: str):
     """
     Plot the raw data of angle values using a csv file
 
     Args:
         :param path: the name of the csv containing the angle values
+        :param mol: the type of biomolecule, protein or rna
     """
-    eta, theta = [], []
-    angle = get_angle(path)
+    x_values, y_values = [], []
+    angle_values = get_angle(path, mol)
 
-    for i in range(0, len(angle)):
-        eta.append(angle[i][0])
-        theta.append(angle[i][1])
+    for i in range(0, len(angle_values)):
+        x_values.append(angle_values[i][0])
+        y_values.append(angle_values[i][1])
 
-    plt.scatter(eta, theta, 1, color="k")
-    plt.title("η-θ conformational space")
-    plt.xlabel("η (degrees)")
-    plt.ylabel("θ (degrees)")
+    if mol == "rna":
+        angle_names = ["η", "θ"]
+    elif mol =="protein":
+        angle_names = ["φ", "ψ"]
+    else:
+        print("\nWrong molecule type given\n")
+
+    plt.scatter(x_values, y_values, 1, color="k")
+    plt.title(f"{angle_names[0]}-{angle_names[1]} conformational space")
+    plt.xlabel(f"{angle_names[0]} (degrees)")
+    plt.ylabel(f"{angle_names[1]} (degrees)")
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
-    plt.savefig("raw_data.png")
+    plt.savefig(f"figures_clust/raw_{mol}_data.png")
+
+    print(f"\nRaw data saved in figures_clust/raw_{mol}_data.png\n")
 
 
 def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):

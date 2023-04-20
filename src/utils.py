@@ -6,12 +6,13 @@ import numpy as np
 import pandas as pd
 
 
-def get_angle(path_csv: str)-> np.ndarray:
+def get_angle(path_csv: str, mol: str)-> np.ndarray:
 	"""
 	Extract the angle values of a csv file to write them in an array
 
 	Args:
 		:param path_csv: the path of the csv file
+		:param mol: the type of biomolecule, protein or rna
 	Returns:
         :return an array with the couples of angle values
 	"""
@@ -19,9 +20,12 @@ def get_angle(path_csv: str)-> np.ndarray:
 	
 	data = raw_data.dropna()
 	
-	angle = data[["ETA", "THETA"]].to_numpy()
+	if mol == "rna":
+		angle_values = data[["ETA", "THETA"]].to_numpy()
+	elif mol == "protein":
+		angle_values = data[["PHI", "PSI"]].to_numpy()
 
-	return np.array(angle)
+	return np.array(angle_values)
 
 
 def save_model(path_save_model: str, model: Any):
@@ -42,6 +46,8 @@ def load_model(path_load_model: str):
 
 	Args:
 		:param path_load_model: the path used to find the save model
+	Returns:
+        :return the loaded model
 	"""
 	with open(path_load_model, "rb") as model_file:
 		loaded_model = pickle.load(model_file)
@@ -54,7 +60,7 @@ def labels_to_seq(list_labels: list):
 	Transform the labels of a list into a string sequence
 
 	Args:
-		:param list_labels: the list containing the labels of the model
+		:param list_labels: the list containing the labels of the a file
 	"""
 	sequence = ""
 	list_structure = list(string.ascii_uppercase)

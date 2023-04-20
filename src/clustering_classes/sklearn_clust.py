@@ -13,7 +13,7 @@ class SklearnClust(Clustering):
 		super().__init__(*args, **kwargs)
 		
 	def train_model(self, method_name: str,*args, **kwargs)-> str:
-		x_train = get_angle(f"{self.temp_dir}/train_values.csv")
+		x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
 
 		if method_name == "dbscan":
 			model = DBSCAN(**ParamModel.DBSCAN)
@@ -28,12 +28,14 @@ class SklearnClust(Clustering):
 		elif method_name == "som":
 			model = SOM(**ParamModel.SOM)
 	
+		print(f"\n{method_name} clustering starts for {self.mol} data")
+
 		raw_labels = model.fit_predict(x_train)
 		nb_clusters = len(np.unique(raw_labels))
 
 		labels = self.order_labels(raw_labels)
 
-		print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
+		print(f"\n{method_name} clustering done, number of clusters :", nb_clusters, "\n")
 		print(f"Model saved in models/{method_name}_{self.mol}_model.pickle", "\n")
 
 		save_model(f"models/{method_name}_{self.mol}_model.pickle", model)
@@ -64,7 +66,7 @@ class SklearnClust(Clustering):
 
 
 	def predict_seq(self, model_path: str):
-		x_test = get_angle(f"{self.temp_dir}/test_values.csv")
+		x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
 
 		predict_model = load_model(model_path)
 		labels = list(predict_model.fit_predict(x_test))
