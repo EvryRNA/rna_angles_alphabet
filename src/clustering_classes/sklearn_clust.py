@@ -28,16 +28,10 @@ class SklearnClust(Clustering):
 		elif method_name == "som":
 			model = SOM(**ParamModel.SOM)
 	
-		labels = model.fit_predict(x_train)
-		nb_clusters = len(np.unique(labels))
+		raw_labels = model.fit_predict(x_train)
+		nb_clusters = len(np.unique(raw_labels))
 
-		if method_name == "dbscan":
-			labels += 1
-
-		elif method_name == "outlier":
-			for i in range(0, len(labels)):
-				if labels[i] == -1:
-					labels[i] = 0
+		labels = self.order_labels(raw_labels)
 
 		print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
 		print(f"Model saved in models/{method_name}_{self.mol}_model.pickle", "\n")
@@ -47,6 +41,27 @@ class SklearnClust(Clustering):
 
 		return f"models/{method_name}_{self.mol}_model.pickle"
 		
+
+	def order_labels(self, raw_labels):
+
+		final_labels = raw_labels
+		
+		if np.unique(raw_labels)[0] == -1:
+			modif_labels = np.delete(raw_labels, np.where(raw_labels == -1))
+			ordered_clusters = list(np.argsort(np.bincount(modif_labels))[::-1])
+
+		else:
+			ordered_clusters = list(np.argsort(np.bincount(raw_labels))[::-1])
+
+		for i in range(0, len(final_labels)):
+			if final_labels[i] != -1:
+				final_labels[i] = ordered_clusters.index(final_labels[i])
+
+		if np.unique(raw_labels)[0] == -1:
+			final_labels = final_labels + 1
+
+		return(final_labels)
+
 
 	def predict_seq(self, model_path: str):
 		x_test = get_angle(f"{self.temp_dir}/test_values.csv")

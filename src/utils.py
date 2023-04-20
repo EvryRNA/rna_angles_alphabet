@@ -54,10 +54,13 @@ def labels_to_seq(list_labels: list):
 	Transform the labels of a list into a string sequence
 
 	Args:
-		:param list_labels: the list containing the labels
+		:param list_labels: the list containing the labels of the model
 	"""
 	sequence = ""
 	list_structure = list(string.ascii_uppercase)
+	
+	if list(set(list_labels)) == [1, -1]:
+		list_labels = [0 if x==1 else x for x in list_labels]
 
 	for i in range(0, len(list_labels)):
 		if list_labels[i] == -1:
