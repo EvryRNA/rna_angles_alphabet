@@ -49,7 +49,7 @@ class Pipeline:
     def get_angles(self, temp_dir: str, training_path: Optional[str],
                    testing_path: Optional[str], mol: str, model_path: Optional[str]):
         """
-        Get the angles values in a csv
+        Get the angles values of a dataset in a csv
 
         Args:
             :param temp_dir: the path of the temporary directory
@@ -85,7 +85,8 @@ class Pipeline:
     def initialize_clustering_model(self, method_name:  Optional[str], 
                      model_path: Optional[str]) -> Clustering:
         """
-        Initialise the clustering class with either R or Sklearn model.
+        Initialize the clustering class with either R or Sklearn model
+
         Args:
             :param method_name: the name of the clustering method to use
             :param model_path: if a model is not given, train a new model
@@ -112,7 +113,7 @@ class Pipeline:
     def fit_data(self, temp_dir: str, method_name:  Optional[str], mol: str, 
                      model_path: Optional[str]):
         """
-        Train the model, fit the testing data and return the sequence
+        Train the model, fit the testing data and print the sequence
 
         Args:
             :param temp_dir: the path of the temporary directory

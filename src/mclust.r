@@ -46,11 +46,11 @@ test_model <- function(dir, model_path) {
 }
 
 
-# Order the model labels
-order_model <- function(load_model) {
+# Rank the model labels
+rank_model <- function(load_model) {
     raw_model_labels <- table(load_model$classification)
-    order_model_labels <- order(raw_model_labels, decreasing = TRUE)
-    return(order_model_labels)
+    ranked_model_labels <- order(raw_model_labels, decreasing = TRUE)
+    return(ranked_model_labels)
 }
 
 
@@ -68,10 +68,10 @@ predict_labels <- function(load_model, dir) {
 
 
 # Return a sequence from the labels
-arrange_labels <- function(test_labels, order_model_labels) {
+arrange_labels <- function(test_labels, ranked_model_labels) {
     sequence <- ""
     for (i in 1:length(test_labels)) { # nolint: seq_linter.
-        test_labels[i] <- grep(test_labels[i], order_model_labels)
+        test_labels[i] <- grep(test_labels[i], ranked_model_labels)
         sequence <- paste(sequence, LETTERS[test_labels[i]])
     }
     print(sequence)
@@ -85,8 +85,8 @@ if (args[1] == "train") {
 } else if (args[1] == "test") {
     model_path <- args[3]
     load_model <- test_model(temp_dir, model_path)
-    order_model_labels <- order_model(load_model)
+    ranked_model_labels <- rank_model(load_model)
 
     test_labels <- predict_labels(load_model, temp_dir)
-    arrange_labels(test_labels, order_model_labels)
+    arrange_labels(test_labels, ranked_model_labels)
 }

@@ -42,7 +42,7 @@ def save_model(path_save_model: str, model: Any):
 
 def load_model(path_load_model: str):
 	"""
-	Load a model in pickle format and return it
+	Load a model in pickle format
 
 	Args:
 		:param path_load_model: the path used to find the save model
@@ -55,12 +55,14 @@ def load_model(path_load_model: str):
 	return loaded_model
 
 
-def labels_to_seq(list_labels: list):
+def labels_to_seq(list_labels: list)-> str:
 	"""
 	Transform the labels of a list into a string sequence
 
 	Args:
 		:param list_labels: the list containing the labels of the a file
+	Returns:
+        :return a sequence in capital letters
 	"""
 	sequence = ""
 	list_structure = list(string.ascii_uppercase)
