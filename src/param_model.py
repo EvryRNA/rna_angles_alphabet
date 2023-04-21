@@ -58,4 +58,4 @@ class ParamModel:
         warm_start=False,
     )
 
-    SOM = dict(m=5, n=2, dim=2, lr=1)  # Options: sigma, max_iter, random_state
+    SOM = dict(m=5, n=2, dim=2, lr=1)  # Other ptions: sigma, max_iter, random_state

@@ -18,10 +18,12 @@ def raw_data_plot(path: str, mol: str):
     x_values, y_values = [], []
     angle_values = get_angle(path, mol)
 
+    # Separate the x and y values in 2 distinct lists
     for i in range(0, len(angle_values)):
         x_values.append(angle_values[i][0])
         y_values.append(angle_values[i][1])
 
+    # Choose the axis names depending on the type of molecule
     if mol == "rna":
         angle_names = ["η", "θ"]
     elif mol == "protein":
@@ -53,8 +55,10 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
         :param method: name of the clustering method used
         :param temp_dir: the path of the temporary directory
     """
+    # Give as many colors as the number of clusters
     colors = get_colors(nb_clusters)
 
+    # Add each cluster to the plot one by one
     for i in range(0, nb_clusters):
         filter = f"label{i} = x[label == {i}]"
         exec(filter)
@@ -79,12 +83,15 @@ def get_colors(nb_colors: int):
     Args:
         :param nb_colors: the number of colors to return
     """
+    # The 7 base colors
     colors = ["k", "r", "g", "b", "y", "m", "c"]
 
+    # If there are more clusters, add random ones to complete
     if nb_colors > 7:
         list_colors = mcolors.CSS4_COLORS
 
         for i in range(0, nb_colors - 7):
             colors.append(random.choice(list(list_colors.keys())))
+    print(len(colors))
 
     return colors

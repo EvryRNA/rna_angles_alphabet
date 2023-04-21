@@ -20,6 +20,7 @@ def get_angle(path_csv: str, mol: str) -> np.ndarray:
 
     data = raw_data.dropna()
 
+    # The column names depends on the molecule type
     if mol == "rna":
         angle_values = data[["ETA", "THETA"]].to_numpy()
     elif mol == "protein":
@@ -67,9 +68,11 @@ def labels_to_seq(list_labels: list) -> str:
     sequence = ""
     list_structure = list(string.ascii_uppercase)
 
+    # For outlier method, changes labels -1 and 1 into -1 and 0
     if list(set(list_labels)) == [1, -1]:
         list_labels = [0 if x == 1 else x for x in list_labels]
 
+    # Attribute a letter to each label, "-" if -1
     for i in range(0, len(list_labels)):
         if list_labels[i] == -1:
             letter = "-"

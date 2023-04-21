@@ -13,6 +13,7 @@ create_model <- function(dir, mol) {
     "numeric", "NULL", "NULL", "NULL"))
     train_data <- na.omit(train_data)
 
+    # Mclust method with all parameters
     model_mclust <- Mclust(train_data, G = NULL, modelNames = NULL,
     prior = NULL, control = emControl(), initialization = NULL,
     warn = mclust.options("warn"), x =  NULL, verbose = interactive())

@@ -39,9 +39,12 @@ class Pipeline:
         Args:
             :param temp_dir: the path of the temporary directory
         """
+        # Check if the directories and create them if not
         os.makedirs("models", exist_ok=True)
         os.makedirs("figures_clust", exist_ok=True)
         os.makedirs(temp_dir, exist_ok=True)
+
+        # If the temp directory already exist, remove all its files
         for file in os.listdir(temp_dir):
             os.remove(f"{temp_dir}/{file}")
 
@@ -69,10 +72,12 @@ class Pipeline:
             if training_path is None:
                 sys.exit("Error: No training nor model path given!")
             else:
+                # Get the train values
                 train_angles = class_molecule()
                 train_angles.get_values(training_path, "train", temp_dir)
 
                 if testing_path is not None:
+                    # Get the test values
                     test_angles = class_molecule()
                     test_angles.get_values(testing_path, "test", temp_dir)
 
@@ -80,10 +85,12 @@ class Pipeline:
             sys.exit("Error: No testing path given!")
 
         else:
+            # Get the test values
             test_angles = class_molecule()
             test_angles.get_values(testing_path, "test", temp_dir)
 
         if self.visu_raw and training_path is not None:
+            # Plot the raw data if a training path is given
             raw_data_plot(f"{temp_dir}/train_values.csv", mol)
 
     def initialize_clustering_model(self, method_name: Optional[str], model_path: Optional[str]):
@@ -99,6 +106,7 @@ class Pipeline:
         class_cluster = Any
 
         if model_path is not None:
+            # Choose the adequate class depending on the model extension
             if model_path.endswith(".pickle"):
                 class_cluster = SklearnClust
             elif model_path.endswith(".Rds"):
@@ -126,14 +134,17 @@ class Pipeline:
             :param mol: the type of biomolecule, protein or rna
             :param model_path: if a model is not given, train a new model
         """
+        # Get the adequate class
         class_cluster = self.initialize_clustering_model(method_name, model_path)
         seq_process = class_cluster(temp_dir, mol)
 
         if model_path is None:
+            # Train the model
             params = {"method_name": method_name}
             model_path = seq_process.train_model(**params)
 
         if self.testing_path is not None:
+            # Fit the data and print the sequence
             seq_process.predict_seq(model_path)
 
     def main(self):
@@ -195,7 +206,7 @@ class Pipeline:
             dest="visu_raw",
             action=argparse.BooleanOptionalAction,
             default=False,
-            help="Plot the raw data, requires a training path",
+            help="Plot the raw data if True, requires a training path",
         )
         args = parser.parse_args()
         return args
