@@ -5,7 +5,7 @@ import os
 import unittest
 
 from src.plot_helper import get_colors
-from src.utils import get_angle, text_to_csv, labels_to_seq, save_model, load_model
+from src.utils import get_angle, labels_to_seq, save_model, load_model
 
 path = os.path.join("tests", "data", "test_unit.txt")
 
@@ -18,20 +18,9 @@ class ModelTest(unittest.TestCase):
         """
         with open(path, 'w') as file_test:
             file_test.write("ETA,THETA\n0,1")
-        test_array = get_angle(path)
+        test_array = get_angle(path, "rna")
         self.assertEqual([0, 1], [test_array[0][0], test_array[0][1]])
         os.remove(path)
-    
-    
-    def test_text_to_csv(self):
-        """
-        Test the csv function
-        """
-        with open(path, 'w') as file_test:
-            text_to_csv(path, ["ETA", "THETA"])
-        self.assertTrue(os.path.isfile(f"{path[:-4]}.csv"))
-        os.remove(path)
-        os.remove(f"{path[:-4]}.csv")
 
     
     def test_labels_to_seq(self):
@@ -71,7 +60,10 @@ class ModelTest(unittest.TestCase):
         Test if the function return a list of colors
         """
         list_colors = get_colors(5)
-        self.assertTrue(list_colors[0] == "k" and len(list_colors) == 5)
+        self.assertTrue(list_colors[0] == "k" and len(list_colors) == 7)
+
+        list_colors_bis = get_colors(10)
+        self.assertTrue(list_colors_bis[0] == "k" and len(list_colors_bis) == 10)
 
 if __name__ == "__main__":
     unittest.main()
