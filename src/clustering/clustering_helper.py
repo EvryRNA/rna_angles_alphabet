@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 
-class Clustering:
+class ClusteringHelper:
     def __init__(
         self,
         temp_dir: str,

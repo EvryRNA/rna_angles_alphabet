@@ -3,8 +3,8 @@ import os
 import sys
 from typing import Any, Optional
 
-from src.clustering_classes.r_clust import RClust
-from src.clustering_classes.sklearn_clust import SklearnClust
+from src.clustering.r_clust import RClust
+from src.clustering.sklearn_clust import SklearnClust
 from src.plot_helper import raw_data_plot
 from src.preprocessing_classes.protein_prep import ProteinPrep
 from src.preprocessing_classes.rna_prep import RNAPrep

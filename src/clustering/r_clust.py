@@ -1,9 +1,9 @@
 import os
 
-from src.clustering_classes.clustering_helper import Clustering
+from src.clustering.clustering_helper import ClusteringHelper
 
 
-class RClust(Clustering):
+class RClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

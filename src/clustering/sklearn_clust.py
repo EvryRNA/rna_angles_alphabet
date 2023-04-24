@@ -3,13 +3,13 @@ from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
 from sklearn.ensemble import IsolationForest
 from sklearn_som.som import SOM
 
-from src.clustering_classes.clustering_helper import Clustering
+from src.clustering.clustering_helper import ClusteringHelper
 from src.param_model import ParamModel
 from src.plot_helper import plot_cluster
 from src.utils import get_angle, labels_to_seq, load_model, save_model
 
 
-class SklearnClust(Clustering):
+class SklearnClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
