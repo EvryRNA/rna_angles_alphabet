@@ -27,8 +27,8 @@ class ModelTest(unittest.TestCase):
         """
         Test the labels to seq function
         """
-        test_labels = [-1, 0, 1, 2, 3, 7, 1, 0, -1, 3, -1]
-        self.assertEqual("-ABCDHBA-D-", labels_to_seq(test_labels))
+        test_labels = [-1, 0, 1, 3, 3, 2, 3, 0, -1,]
+        self.assertEqual("-ABDDCDA-", labels_to_seq(test_labels))
         
 
     def test_save_model(self):
