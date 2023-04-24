@@ -15,6 +15,6 @@ class RNAPrep(PreprocessHelper):
 
         """
         os.system(
-            f"src/c_code/angle_calculation -d {data_path} "
+            f"src/cpp_script/angle_calculation -d {data_path} "
             + f"-o {temp_dir}/{data_type}_values.csv -R -p -f -t"
         )

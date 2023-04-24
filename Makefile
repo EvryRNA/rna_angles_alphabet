@@ -44,3 +44,13 @@ all_tests: test_static_all test_complexity test_documentation test_unit_coverage
 # Launch pipeline with dbscan on RNA
 run_pipeline:
 	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna
+
+
+
+# C++
+CC    = g++
+SRC1  = src/cpp_script/angle_calculation.cpp
+EXE1  = src/cpp_script/angle_calculation
+
+compile_cpp:
+	$(CC) -std=c++17 -lstdc++fs $(SRC1) -o $(EXE1)
