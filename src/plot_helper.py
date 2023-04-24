@@ -1,10 +1,7 @@
-import random
-
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils import get_angle
+from src.utils import get_angle, get_colors
 
 
 def raw_data_plot(path: str, mol: str):
@@ -74,23 +71,3 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
     plt.savefig(f"figures_clust/{method}_{mol}_cluster.png")
 
     print(f"Clustering saved in figures_clust/{method}_{mol}_cluster.png\n")
-
-
-def get_colors(nb_colors: int):
-    """
-    Return a list of random colors
-
-    Args:
-        :param nb_colors: the number of colors to return
-    """
-    # The 7 base colors
-    colors = ["k", "r", "g", "b", "y", "m", "c"]
-
-    # If there are more clusters, add random ones to complete
-    if nb_colors > 7:
-        list_colors = mcolors.CSS4_COLORS
-
-        for i in range(0, nb_colors - 7):
-            colors.append(random.choice(list(list_colors.keys())))
-
-    return colors

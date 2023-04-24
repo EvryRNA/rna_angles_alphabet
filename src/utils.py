@@ -1,7 +1,9 @@
 import pickle
+import random
 import string
 from typing import Any
 
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
@@ -81,3 +83,23 @@ def labels_to_seq(list_labels: list) -> str:
         sequence += letter
 
     return sequence
+
+
+def get_colors(nb_colors: int):
+    """
+    Return a list of random colors
+
+    Args:
+        :param nb_colors: the number of colors to return
+    """
+    # The 7 base colors
+    colors = ["k", "r", "g", "b", "y", "m", "c"]
+
+    # If there are more clusters, add random ones to complete
+    if nb_colors > 7:
+        list_colors = mcolors.CSS4_COLORS
+
+        for i in range(0, nb_colors - 7):
+            colors.append(random.choice(list(list_colors.keys())))
+
+    return colors
