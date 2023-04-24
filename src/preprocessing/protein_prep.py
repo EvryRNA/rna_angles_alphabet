@@ -10,8 +10,8 @@ class ProteinPrep(PreprocessHelper):
 
         Args:
             :param data_path: the path to the data
-                        :param data_type: either train or test, used to save the result
-                        :param temp_dir: the path of the temporary directory
+            :param data_type: either train or test, used to save the result
+            :param temp_dir: the path of the temporary directory
 
         """
         os.system(

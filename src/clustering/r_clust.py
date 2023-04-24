@@ -12,9 +12,9 @@ class RClust(ClusteringHelper):
         Execute a R script to train a model with the mclust package and save it
 
         Args:
-                        :param temp_dir: the path of the temporary directory
+            :param temp_dir: the path of the temporary directory
             :param mol: the type of biomolecule, protein or rna
-                Returns:
+        Returns:
             :return the path where the model is saved in Rds format
         """
         os.system(f"Rscript src/mclust.r train {self.temp_dir} {self.mol}")
@@ -26,7 +26,7 @@ class RClust(ClusteringHelper):
         Execute a R script to load a model, fit the data and print the final sequence
 
         Args:
-                        :param temp_dir: the path of the temporary directory
+            :param temp_dir: the path of the temporary directory
             :param model_path: the path to the saved model to use, in Rds format
         """
         os.system(f"Rscript src/mclust.r test {self.temp_dir} {model_path}")

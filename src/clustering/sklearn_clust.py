@@ -18,10 +18,10 @@ class SklearnClust(ClusteringHelper):
         Select a sklearn method to train a model and save it in pickle format
 
         Args:
-                        :param method_name: the name of the clustering method to use
-                        :param temp_dir: the path of the temporary directory
+            :param method_name: the name of the clustering method to use
+            :param temp_dir: the path of the temporary directory
             :param mol: the type of biomolecule, protein or rna
-                Returns:
+        Returns:
             :return the path where the model is saved in pickle format
         """
         # Get the angle values
@@ -60,11 +60,11 @@ class SklearnClust(ClusteringHelper):
 
     def rank_labels(self, labels, plot=False):
         """
-                Ranks the labels of a clustering model by size in descending order
+        Ranks the labels of a clustering model by size in descending order
 
         Args:
-                        :param labels: an array of labels
-                Returns:
+            :param labels: an array of labels
+        Returns:
             :return an array where the labels reflect the size of their cluster
         """
         # Get the labels in order depending in their size
@@ -91,9 +91,9 @@ class SklearnClust(ClusteringHelper):
         Load a model, fit the data and print the final sequence
 
         Args:
-                        :param model_path: the path to the saved model to use, in pickle format
-                        :param temp_dir: the path of the temporary directory
-                        :param mol: the type of biomolecule, protein or rna
+            :param model_path: the path to the saved model to use, in pickle format
+            :param temp_dir: the path of the temporary directory
+            :param mol: the type of biomolecule, protein or rna
         """
         # Get the angle values to fit on the model
         x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
