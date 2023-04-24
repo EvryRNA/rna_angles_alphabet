@@ -1,6 +1,6 @@
 import os
 
-from src.preprocessing_classes.preprocess_helper import PreprocessHelper
+from src.preprocessing.preprocess_helper import PreprocessHelper
 
 
 class ProteinPrep(PreprocessHelper):
