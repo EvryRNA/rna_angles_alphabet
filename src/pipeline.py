@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 from typing import Any, Optional
 
 from src.clustering.r_clust import RClust
@@ -11,6 +10,18 @@ from src.preprocessing.rna_prep import RNAPrep
 
 
 class Pipeline:
+    """
+    The class used to execute all the process
+
+    Attributes:
+        training_path: The path to the directory with the training data
+        testing_path: The path to the directory with the testing data
+        temp_dir: The path to the directory used for temporary files
+        method_name: The custering method to use
+        mol: The type of biomolecule to process, protein or RNA
+        model_path: The path to an existing model in pickle or Rds format
+        visu_raw: Plot the raw data if True, requires a training path
+    """
     def __init__(
         self,
         training_path: str,
@@ -21,9 +32,6 @@ class Pipeline:
         model_path: str,
         visu_raw: bool,
     ):
-        """
-        Initialize the different attributes
-        """
         self.training_path = training_path
         self.testing_path = testing_path
         self.temp_dir = temp_dir
@@ -48,7 +56,7 @@ class Pipeline:
         for file in os.listdir(temp_dir):
             os.remove(f"{temp_dir}/{file}")
 
-    def get_angles(
+    def preprocess_data(
         self,
         temp_dir: str,
         training_path: Optional[str],
@@ -70,7 +78,7 @@ class Pipeline:
 
         if model_path is None:
             if training_path is None:
-                sys.exit("Error: No training nor model path given!")
+                raise ValueError("No training nor model path given!")
             else:
                 # Get the train values
                 train_angles = class_molecule()
@@ -82,7 +90,7 @@ class Pipeline:
                     test_angles.get_values(testing_path, "test", temp_dir)
 
         elif model_path is not None and testing_path is None:
-            sys.exit("Error: No testing path given!")
+            raise ValueError("No testing path given!")
 
         else:
             # Get the test values
@@ -112,13 +120,13 @@ class Pipeline:
             elif model_path.endswith(".Rds"):
                 class_cluster = RClust
             else:
-                sys.exit(f'FORMAT FILE NOT GOOD : "{model_path}", use .pickle or .Rds')
+                raise ValueError("When giving a model, use a .pickle or .Rds format!")
 
         else:
             if method_name is not None:
                 class_cluster = RClust if method_name == "mclust" else SklearnClust
             else:
-                sys.exit("Error: No model path nor method name given!")
+                raise ValueError("No model path nor method name given!")
 
         return class_cluster
 
@@ -149,7 +157,7 @@ class Pipeline:
 
     def main(self):
         self.setup_dir(self.temp_dir)
-        self.get_angles(
+        self.preprocess_data(
             self.temp_dir, self.training_path, self.testing_path, self.mol, self.model_path
         )
         self.fit_data(self.temp_dir, self.method_name, self.mol, self.model_path)
@@ -184,7 +192,7 @@ class Pipeline:
             type=str,
             choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "som", "outlier"],
             default=None,
-            help="The custering method to use, kmeans needs nb_clusters",
+            help="The custering method to use",
         )
         parser.add_argument(
             "--mol",

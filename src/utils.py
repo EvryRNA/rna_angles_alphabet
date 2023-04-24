@@ -26,7 +26,7 @@ def get_angle(path_csv: str, mol: str) -> np.ndarray:
     elif mol == "protein":
         angle_values = data[["PHI", "PSI"]].to_numpy()
 
-    return np.array(angle_values)
+    return angle_values
 
 
 def save_model(path_save_model: str, model: Any):
