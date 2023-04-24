@@ -190,7 +190,8 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "som", "outlier"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust",
+                     "outlier", "som"],
             default=None,
             help="The custering method to use",
         )

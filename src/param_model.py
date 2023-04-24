@@ -1,3 +1,8 @@
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
+from sklearn.ensemble import IsolationForest
+from sklearn_som.som import SOM
+
+
 class ParamModel:
     DBSCAN = dict(
         eps=8,
@@ -59,3 +64,30 @@ class ParamModel:
     )
 
     SOM = dict(m=5, n=2, dim=2, lr=1)  # Other ptions: sigma, max_iter, random_state
+
+CONVERSION_NAME_TO_MODEL = {
+    "dbscan": {
+        "class": DBSCAN,
+        "params": ParamModel.DBSCAN
+    },
+    "mean_shift": {
+        "class": MeanShift,
+        "params": ParamModel.MeanShift
+    },
+    "kmeans": {
+        "class": KMeans,
+        "params": ParamModel.KMeans
+    },
+    "hierarchical": {
+        "class": AgglomerativeClustering,
+        "params": ParamModel.Hierarchical
+    },
+    "outlier": {
+        "class": IsolationForest,
+        "params": ParamModel.Outlier
+    },
+    "som": {
+        "class": SOM,
+        "params": ParamModel.SOM
+    }
+}

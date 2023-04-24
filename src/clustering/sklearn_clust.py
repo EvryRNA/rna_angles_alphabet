@@ -1,10 +1,7 @@
 import numpy as np
-from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
-from sklearn.ensemble import IsolationForest
-from sklearn_som.som import SOM
 
 from src.clustering.clustering_helper import ClusteringHelper
-from src.param_model import ParamModel
+from src.param_model import CONVERSION_NAME_TO_MODEL, ParamModel
 from src.plot_helper import plot_cluster
 from src.utils import get_angle, labels_to_seq, load_model, save_model
 
@@ -27,19 +24,12 @@ class SklearnClust(ClusteringHelper):
         # Get the angle values
         x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
 
-        # Choose the method and execute it with the parameters found in param_model.py
-        if method_name == "dbscan":
-            model = DBSCAN(**ParamModel.DBSCAN)
-        elif method_name == "mean_shift":
-            model = MeanShift(**ParamModel.MeanShift)
-        elif method_name == "kmeans":
-            model = KMeans(**ParamModel.KMeans)
-        elif method_name == "hierarchical":
-            model = AgglomerativeClustering(**ParamModel.Hierarchical)
-        elif method_name == "outlier":
-            model = IsolationForest(**ParamModel.Outlier)
-        elif method_name == "som":
-            model = SOM(**ParamModel.SOM)
+        # Initialize the model with the right method and parameters (in param_model.py)
+        conversion_name = CONVERSION_NAME_TO_MODEL.get(method_name, None)
+        if conversion_name is None:
+            raise NotImplementedError(f"Model {method_name} not found")
+        class_, params = conversion_name["class"], conversion_name["params"]
+        model = class_(**params)
 
         print(f"\n{method_name} clustering starts for {self.mol} data")
 
