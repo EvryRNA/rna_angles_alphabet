@@ -92,6 +92,5 @@ def get_colors(nb_colors: int):
 
         for i in range(0, nb_colors - 7):
             colors.append(random.choice(list(list_colors.keys())))
-    print(len(colors))
 
     return colors
