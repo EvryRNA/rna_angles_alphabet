@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.clustering.clustering_helper import ClusteringHelper
-from src.param_model import CONVERSION_NAME_TO_MODEL, ParamModel
+from src.param_model import CONVERSION_NAME_TO_MODEL
 from src.plot_helper import plot_cluster
 from src.utils import get_angle, labels_to_seq, load_model, save_model
 

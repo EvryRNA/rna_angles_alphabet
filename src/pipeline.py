@@ -22,6 +22,7 @@ class Pipeline:
         model_path: The path to an existing model in pickle or Rds format
         visu_raw: Plot the raw data if True, requires a training path
     """
+
     def __init__(
         self,
         training_path: str,
@@ -190,8 +191,7 @@ class Pipeline:
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust",
-                     "outlier", "som"],
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "outlier", "som"],
             default=None,
             help="The custering method to use",
         )

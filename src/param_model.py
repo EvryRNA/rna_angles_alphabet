@@ -65,29 +65,13 @@ class ParamModel:
 
     SOM = dict(m=5, n=2, dim=2, lr=1)  # Other ptions: sigma, max_iter, random_state
 
+
+# Dictionary used to find the right function and parameters for each method
 CONVERSION_NAME_TO_MODEL = {
-    "dbscan": {
-        "class": DBSCAN,
-        "params": ParamModel.DBSCAN
-    },
-    "mean_shift": {
-        "class": MeanShift,
-        "params": ParamModel.MeanShift
-    },
-    "kmeans": {
-        "class": KMeans,
-        "params": ParamModel.KMeans
-    },
-    "hierarchical": {
-        "class": AgglomerativeClustering,
-        "params": ParamModel.Hierarchical
-    },
-    "outlier": {
-        "class": IsolationForest,
-        "params": ParamModel.Outlier
-    },
-    "som": {
-        "class": SOM,
-        "params": ParamModel.SOM
-    }
+    "dbscan": {"class": DBSCAN, "params": ParamModel.DBSCAN},
+    "mean_shift": {"class": MeanShift, "params": ParamModel.MeanShift},
+    "kmeans": {"class": KMeans, "params": ParamModel.KMeans},
+    "hierarchical": {"class": AgglomerativeClustering, "params": ParamModel.Hierarchical},
+    "outlier": {"class": IsolationForest, "params": ParamModel.Outlier},
+    "som": {"class": SOM, "params": ParamModel.SOM},
 }
