@@ -1,3 +1,4 @@
+import os
 import pickle
 import random
 import string
@@ -8,6 +9,23 @@ import numpy as np
 import pandas as pd
 
 
+def setup_dir(temp_dir: str):
+        """
+        Create directories used by the pipeline
+
+        Args:
+            :param temp_dir: the path of the temporary directory
+        """
+        # Check if the directories and create them if not
+        os.makedirs("models", exist_ok=True)
+        os.makedirs("figures_clust", exist_ok=True)
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # If the temp directory already exist, remove all its files
+        for file in os.listdir(temp_dir):
+            os.remove(f"{temp_dir}/{file}")
+            
+            
 def get_angle(path_csv: str, mol: str) -> np.ndarray:
     """
     Extract the angle values of a csv file to write them in an array

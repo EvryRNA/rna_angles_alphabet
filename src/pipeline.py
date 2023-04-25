@@ -1,5 +1,4 @@
 import argparse
-import os
 from typing import Any, Optional
 
 from src.clustering.r_clust import RClust
@@ -7,6 +6,7 @@ from src.clustering.sklearn_clust import SklearnClust
 from src.plot_helper import raw_data_plot
 from src.preprocessing.protein_prep import ProteinPrep
 from src.preprocessing.rna_prep import RNAPrep
+from src.utils import setup_dir
 
 
 class Pipeline:
@@ -41,22 +41,6 @@ class Pipeline:
         self.model_path = model_path
         self.visu_raw = visu_raw
 
-    def setup_dir(self, temp_dir: str):
-        """
-        Create a temporary directory to store transitory files
-
-        Args:
-            :param temp_dir: the path of the temporary directory
-        """
-        # Check if the directories and create them if not
-        os.makedirs("models", exist_ok=True)
-        os.makedirs("figures_clust", exist_ok=True)
-        os.makedirs(temp_dir, exist_ok=True)
-
-        # If the temp directory already exist, remove all its files
-        for file in os.listdir(temp_dir):
-            os.remove(f"{temp_dir}/{file}")
-
     def preprocess_data(
         self,
         temp_dir: str,
@@ -75,6 +59,10 @@ class Pipeline:
             :param mol: the type of biomolecule, protein or rna
             :param model_path: if a model is not given, process the training data
         """
+        # Setup the necessary directories
+        setup_dir(temp_dir)
+
+        #Initialize the class depending on the type of molecule
         class_molecule = RNAPrep if mol == "rna" else ProteinPrep
 
         if model_path is None:
@@ -157,7 +145,6 @@ class Pipeline:
             seq_process.predict_seq(model_path)
 
     def main(self):
-        self.setup_dir(self.temp_dir)
         self.preprocess_data(
             self.temp_dir, self.training_path, self.testing_path, self.mol, self.model_path
         )
