@@ -20,10 +20,6 @@ def setup_dir(temp_dir: str):
         os.makedirs("models", exist_ok=True)
         os.makedirs("figures_clust", exist_ok=True)
         os.makedirs(temp_dir, exist_ok=True)
-
-        # If the temp directory already exist, remove all its files
-        for file in os.listdir(temp_dir):
-            os.remove(f"{temp_dir}/{file}")
             
             
 def get_angle(path_csv: str, mol: str) -> np.ndarray:
