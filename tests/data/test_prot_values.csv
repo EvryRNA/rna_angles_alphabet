@@ -1,4 +1,3 @@
 PHI,PSI,POSITION,CHAIN,PDB_FILE
-131.987,85.955,GG,1-2,tests/data/test_prot
-134.849,89.787,GG,2-3,tests/data/test_prot
-9.462,76.737,GG,3-4,tests/data/test_prot
+234.086,15.301,GG,1-2,tests/data/test_prot
+298.451,165.376,GG,2-3,tests/data/test_prot

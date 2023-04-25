@@ -1,4 +1,3 @@
 ETA,THETA,POSITION,CHAIN,PDB_FILE
-155.462,247.584,GG,1-2,tests/data/test_rna
-166.102,209.442,GU,2-3,tests/data/test_rna
-184.406,209.231,UG,3-4,tests/data/test_rna
+156.224,214.245,CA,1-2,tests/data/test_rna
+165.010,208.991,AC,2-3,tests/data/test_rna

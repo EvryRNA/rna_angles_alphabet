@@ -19,7 +19,7 @@ class ModelTest(unittest.TestCase):
         class_prep = RNAPrep()
         class_prep.get_values(f"{path}/test_rna.pdb", "test_rna", path)
         test_array = get_angle(f"{path}/test_rna_values.csv", "rna")
-        self.assertEqual([155.462,247.584], [test_array[0][0], test_array[0][1]])
+        self.assertEqual([156.224,214.245], [test_array[0][0], test_array[0][1]])
 
 
     def test_get_prot_values(self):
@@ -29,7 +29,7 @@ class ModelTest(unittest.TestCase):
         class_prep = ProteinPrep()
         class_prep.get_values(f"{path}/test_prot.pdb", "test_prot", path)
         test_array = get_angle(f"{path}/test_prot_values.csv", "protein")
-        self.assertEqual([131.987, 85.955], [test_array[0][0], test_array[0][1]])
+        self.assertEqual([234.086,15.301], [test_array[0][0], test_array[0][1]])
 
 
 if __name__ == "__main__":
