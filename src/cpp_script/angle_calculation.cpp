@@ -390,6 +390,7 @@ string getHeaderPdbOutput(string mol, bool Omega, bool PosChain, bool ShowFile, 
     vector<string> names;
     string pos = "POSITION";
     string chain = "CHAIN";
+    string res = "RESIDUE";
     string pdb_file = "PDB_FILE";
     string output;
     if (mol == "prot") {
@@ -411,7 +412,7 @@ string getHeaderPdbOutput(string mol, bool Omega, bool PosChain, bool ShowFile, 
         output += separator + "OMEGA";
     }
     if (PosChain){
-        output += separator + pos + separator + chain;
+        output += separator + res + separator + chain + separator + pos;
     }
     if (ShowFile){
         output += separator + pdb_file;
@@ -421,14 +422,14 @@ string getHeaderPdbOutput(string mol, bool Omega, bool PosChain, bool ShowFile, 
 }
 
 string addValuesToOutput(string angles, string angle_omega,
-                    string coords, string positions, string pdb_file,
+                    string coords, string positions, string residus, string pdb_file,
                     bool Omega, bool PosChain, bool ShowFile, string separator){
         string output = angles;
         if (Omega){
             output += separator + angle_omega;
         }
         if (PosChain){
-            output += separator + coords + separator + positions;
+            output += separator + coords + separator + residus + separator + positions;
         }
         if (ShowFile){
             output+= separator + pdb_file;
@@ -442,7 +443,7 @@ int main(int argc, char** argv)
 	string optlist =
 		"   Usage:\n"
 		"   ./angle_calculation [-d PATHWAY_DATASET] [-o OUTPUT_FILE_NAME] [-O] [-R] [-a|-A]\n"
-		"                       [-t] [-i DECIMAL_PLACE] [-p] [-f]\n\n"
+		"                       [-t] [-i DECIMAL_PLACE] [-p] [-f] [-v]\n\n"
 		"   Options:\n"
 		"   -d   string   Pathway of the repository where PDB files you interested of are\n"
 		"   -o   string   Name of your file in output (ex.: YourOuputName_pdbcode.txt).\n"
@@ -452,11 +453,12 @@ int main(int argc, char** argv)
 		"   -Ra           Alternative calculation (Theta'/Eta') using atoms P and C1'\n"
 		"   -RA           Calculation of pseudotorsion angles using both methods\n\n"
 		"   Additional options:\n"
-		"   -p            Allow the user to see the residues sequence number and their chain identifiers on\n"
-		"                 the output file\n"
+		"   -p            Allow the user to see the residues sequence number, the type of residues \n"
+		"                   and their chain identifiers on the output file\n"
 		"   -f            Allow the user to see from which PDB the observed angle values come from\n"
 		"   -i   int      Choosing the number of decimal places (default : 3)\n"
 		"   -t            For users who want angle values between 0° and 360° (default : [-180°;180°])\n"          
+		"   -v            Output in the terminal the values.\n\n"
 		"   -h            Help\n\n";
 
 	string in_dir;    // Pathway of the repository
@@ -470,9 +472,11 @@ int main(int argc, char** argv)
 	bool C4andC1 = false; bool check_A = false;  // Pseudotorsion angles with C4' and C1' (RNA)
 	int decimal = 3;  // Decimal places
 	bool to360 = false;  // [-180°;180°] or [0°;360°]
+	bool verbose= false;
+	bool toTerminal = false;
 
 	int opt;
-	while ((opt = getopt(argc,argv, "hpfORaAti:d:l:o:")) != EOF){
+	while ((opt = getopt(argc,argv, "hpfORaAtivd:o:")) != EOF){
 		switch(opt){
 			case 'd': in_dir = optarg; break;
 			case 'o': output = optarg; break;
@@ -482,21 +486,21 @@ int main(int argc, char** argv)
 			case 't': to360 = true; break;
 			case 'O': Omega = true; break;
 			case 'R': Rna = true; break;
+			case 'v': verbose=true; break;
 			case 'a': alterC4 = false; alterC1 = true; check_a = true; break;
 			case 'A': alterC4 = false; C4andC1 = true; check_A = true; break;
 			case 'h': fprintf(stderr, "%s", optlist.c_str()); return 0;
 		}
 	}
 	if (argc == 1){ fprintf(stderr, "%s", optlist.c_str()); return 1; }
-	if (output.empty()){ cerr << "Error (argument) : Missing -o arguments\n" << endl; return 1;}
-	if (output.empty()){ cerr << "Error (argument) : Missing -o argument\n" << endl; return 1;}
 	if (Rna and Omega){ cerr << "Error (option) : There is no omega pseudotorsion angle [-O] in RNA structure\n" << endl; return 1;}
 	if (!Rna and alterC1){ cerr << "Error (option) : Turn into the RNA mode [-R] to use option [-a]\n" << endl; return 1;}
 	if (!Rna and C4andC1){ cerr << "Error (option) : Turn into the RNA mode [-R] to use option [-A]\n" << endl; return 1;}
 	if (check_a and check_A){ cerr << "Error (option) : -a and -A are incompatible options\n" << endl; return 1;}
 	if (decimal < 0) {cerr << "Error (user) : The number of decimal places [-i] must be greater than or equal to 0\n" << endl; return 1;}
+	if (output.empty()){ output = "output.csv"; toTerminal = true; }
 
-	string position1; string position2; string res_chain; string pdb_file;
+	string position1; string position2; string position3; string res_chain; string pdb_file;
 	string head3; string head4; string head_res = "PAIR"; string head_pos; string head_ch; string head_f;
 
 	if (!Rna)
@@ -517,7 +521,11 @@ int main(int argc, char** argv)
 	if (file_out.is_open())
 	{
         string head_file = getHeaderPdbOutput("prot", Omega, PosChain, ShowFile, false, false, separator);
-        file_out << head_file;
+        if (!toTerminal){
+            file_out << head_file;
+        } else {
+            cout << head_file;
+        }
 
 	int cpt = 0; int cptot = 0;
     vector<string> pdb_names = get_list_dir(in_dir);
@@ -526,7 +534,6 @@ int main(int argc, char** argv)
 		bool pdbmistake = false; bool cutoff = false;
 		string fl = pdb_names[n_file];
 		vector<vector<vector<string> >> Coords;
-
 		if ((fl.size() == 9) || (fl.size() == 5))
 		{
 			Coords = sch_coord_pdb(fl.substr(0,4)+".pdb", fl.substr(4,1));
@@ -546,8 +553,7 @@ int main(int argc, char** argv)
 
 			for (int k = 0; k < Coords.size(); k++)
 			{
-				if (Coords[k].size() >= 6)
-				{
+				if (Coords[k].size() >= 6) {
 					for (int i = 0; i < Coords[k].size()-5; i+=3)
 					{
                         string coords;
@@ -558,13 +564,12 @@ int main(int argc, char** argv)
 
                         if (PosChain){
                               position1 = removeWhitespace(Coords[k][i][5]);
-                              position2 = removeWhitespace("-"+Coords[k][i+3][5]);
+                              position2 = removeWhitespace(Coords[k][i+3][5]);
                               res_chain = removeWhitespace(Coords[k][i][6]);  // Add position, chain and PDB code
                               coords = code3to1[Coords[k][i][3]] + code3to1[Coords[k][i+3][3]];
-                              positions = position1 + position2;
+                              positions = position1 + "/" + position2;
                         }
                         string order = Coords[k][i][4]+Coords[k][i+1][4]+Coords[k][i+2][4]+Coords[k][i+3][4];
-
                         if (order == "N CAC N "){
                             int j = i+2; angle_psi = ftsround(torsion_angle(Coords[k][i], Coords[k][i+1], Coords[k][i+2], Coords[k][i+3], to360), decimal);    // ATOMS : N-CA-C-N
                             angle_phi = ftsround(torsion_angle(Coords[k][j], Coords[k][j+1], Coords[k][j+2], Coords[k][j+3], to360), decimal);    // ATOMS : C-N-CA-C
@@ -590,9 +595,13 @@ int main(int argc, char** argv)
                         }
                             string angles = angle_phi + separator + angle_psi ;
                             string output_to_file = addValuesToOutput(angles, angle_omega,
-                                            coords, positions, removeWhitespace(pdb_file),
+                                            coords, positions,res_chain, removeWhitespace(pdb_file),
                                             Omega, PosChain, ShowFile, separator);
-                            file_out << output_to_file;
+                            if (!toTerminal){
+                                file_out << output_to_file;
+                            } else {
+                                cout << output_to_file;
+                            }
 
 
 							if (Coords[k][i+1][4] == "N ")         //
@@ -619,11 +628,16 @@ int main(int argc, char** argv)
 		cerr << "\n" << cptot  << " : " << "Warning (chain length too short): Presence of protein residues, but in insufficient number for at least 1 chain ("+fl+")" << endl;	
 	} else {
 	cpt +=1; cptot += 1;
-    cout.flush();
-    cout << "\r" << "Processed PDB files :" << cptot;}  // To see the evolution of the processing
+	if (verbose){
+        cout.flush();
+        cout << "\r" << "Processed PDB files :" << cptot;
+	}
+    }  // To see the evolution of the processing
 		}
 	}
-	cout << "\nTotal processed files : " << cpt << " on " << cptot << " given" << endl; // To see how many file was processed at the end
+	if (verbose){
+        cout << "\nTotal processed files : " << cpt << " on " << cptot << " given" << endl; // To see how many file was processed at the end
+	}
 	file_out.close();}
 	return 0;}
 
@@ -640,7 +654,12 @@ int main(int argc, char** argv)
 	if (file_out.is_open())
 	{
         string head_file = getHeaderPdbOutput("rna", false, PosChain, ShowFile, alterC1, C4andC1, separator);
-        file_out << head_file;
+        if (!toTerminal){
+            file_out << head_file;
+        } else {
+            cout << head_file;
+        }
+
 
 	int cpt = 0; int cptot = 0;
     vector<string> pdb_names = get_list_dir(in_dir);
@@ -649,7 +668,6 @@ int main(int argc, char** argv)
 		bool pdbmistake = false; bool cutoff = false;
 		string fl = pdb_names[n_file];
 		vector<vector<vector<string> >> Coords;
-
 		if ((fl.size() == 9) || (fl.size() == 5))
 		{
 			Coords = sch_coord_pdb(fl.substr(0,4)+".pdb", fl.substr(4,1), true);
@@ -679,10 +697,11 @@ int main(int argc, char** argv)
 						if (PosChain)
 						{
 							position1 = removeWhitespace(Coords[k][i][5]);
-							position2 = removeWhitespace("-"+Coords[k][i+3][5]);
+							position2 = removeWhitespace(Coords[k][i+3][5]);
+							position3 = removeWhitespace(Coords[k][i+6][5]);
 							res_chain = removeWhitespace(Coords[k][i][6]);
-                            coords = Coords[k][i][3] + Coords[k][i+3][3];
-                            positions = position1 + position2;
+                            coords = Coords[k][i][3] + Coords[k][i+3][3] + Coords[k][i+6][3];
+                            positions = position1 + "/" + position2 + "/" + position3;
 						}
 
 						string order1 = Coords[k][i][4]+Coords[k][i+1][4]+Coords[k][i+3][4]+Coords[k][i+4][4];
@@ -704,8 +723,12 @@ int main(int argc, char** argv)
 							get_thetaP_etaP(Coords, order2, angle_thetaP, angle_etaP, k, i, j2, pdbmistake, to360, decimal);
 							angles += angle_eta + separator + angle_theta + separator + angle_etaP + separator + angle_thetaP;
 						}
-                    string output = addValuesToOutput(angles, "", coords, positions, removeWhitespace(pdb_file), false, PosChain, ShowFile, separator);
-					file_out << output;
+                    string output = addValuesToOutput(angles, "", coords, positions, res_chain, removeWhitespace(pdb_file), false, PosChain, ShowFile, separator);
+                    if (!toTerminal){
+                        file_out << output;
+                    } else {
+                        cout << output;
+                    }
 					}
 				} else {
 				cutoff = true;}  // Check the length of the sequence, return an error if it is under the cutoff
@@ -719,11 +742,16 @@ int main(int argc, char** argv)
 		cerr << "\n" << cptot  << " : " << "Warning (chain length too short): Presence of RNA residues, but in insufficient number for at least 1 chain ("+fl+")" << endl;
 	} else {
 	cpt +=1; cptot += 1;
-	cout.flush();
-    cout << "\r" << "Processed PDB files :" << cptot;}
+	if (verbose){
+        cout.flush();
+        cout << "\r" << "Processed PDB files :" << cptot;
+	}
+    }
 		}
 	}
-	cout << "\nTotal processed files : " << cpt << " on " << cptot << " given" << endl;
+	if (verbose){
+        cout << "\nTotal processed files : " << cpt << " on " << cptot << " given" << endl;
+	}
 	file_out.close();}
 	return 0;}
 }

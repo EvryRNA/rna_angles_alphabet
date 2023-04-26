@@ -10,27 +10,27 @@ import pandas as pd
 
 
 def setup_dir(temp_dir: str):
-        """
-        Create directories used by the pipeline
+    """
+    Create directories used by the pipeline
 
-        Args:
-            :param temp_dir: the path of the temporary directory
-        """
-        # Check if the directories and create them if not
-        os.makedirs("models", exist_ok=True)
-        os.makedirs("figures_clust", exist_ok=True)
-        os.makedirs(temp_dir, exist_ok=True)
-            
-            
+    Args:
+        :param temp_dir: the path of the temporary directory
+    """
+    # Check if the directories and create them if not
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("figures_clust", exist_ok=True)
+    os.makedirs(temp_dir, exist_ok=True)
+
+
 def get_angle(path_csv: str, mol: str) -> np.ndarray:
     """
     Extract the angle values of a csv file to write them in an array
 
     Args:
-            :param path_csv: the path of the csv file
-            :param mol: the type of biomolecule, protein or rna
+        :param path_csv: the path of the csv file
+        :param mol: the type of biomolecule, protein or rna
     Returns:
-    :return an array with the couples of angle values
+        return an array with the couples of angle values
     """
     raw_data = pd.read_csv(path_csv)
 
@@ -50,8 +50,8 @@ def save_model(path_save_model: str, model: Any):
     Save a model in pickle format
 
     Args:
-            :param path_save_model: the path used to save the model
-            :param model: the model to save
+        :param path_save_model: the path used to save the model
+        :param model: the model to save
     """
     with open(path_save_model, "wb") as model_file:
         pickle.dump(model, model_file)
@@ -62,9 +62,9 @@ def load_model(path_load_model: str):
     Load a model in pickle format
 
     Args:
-            :param path_load_model: the path used to find the save model
+        :param path_load_model: the path used to find the save model
     Returns:
-    :return the loaded model
+        return the loaded model
     """
     with open(path_load_model, "rb") as model_file:
         loaded_model = pickle.load(model_file)
@@ -77,9 +77,9 @@ def labels_to_seq(list_labels: list) -> str:
     Transform the labels of a list into a string sequence
 
     Args:
-            :param list_labels: the list containing the labels of the a file
+        :param list_labels: the list containing the labels of the a file
     Returns:
-    :return a sequence in capital letters
+        return a sequence in capital letters
     """
     sequence = ""
     list_structure = list(string.ascii_uppercase)
@@ -105,6 +105,8 @@ def get_colors(nb_colors: int):
 
     Args:
         :param nb_colors: the number of colors to return
+    Returns:
+        return a list of different colors
     """
     # The 7 base colors
     colors = ["k", "r", "g", "b", "y", "m", "c"]

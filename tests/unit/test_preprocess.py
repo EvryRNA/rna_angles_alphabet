@@ -17,9 +17,12 @@ class ModelTest(unittest.TestCase):
         Test the rna preprocessing
         """
         class_prep = RNAPrep()
-        class_prep.get_values(f"{path}/test_rna.pdb", "test_rna", path)
-        test_array = get_angle(f"{path}/test_rna_values.csv", "rna")
+        class_prep.get_values(f"{path}/test_rna.pdb", "preprocess_rna", path)
+
+        test_array = get_angle(f"{path}/preprocess_rna_values.csv", "rna")
         self.assertEqual([156.224,214.245], [test_array[0][0], test_array[0][1]])
+
+        os.remove(f"{path}/preprocess_rna_values.csv")
 
 
     def test_get_prot_values(self):
@@ -27,10 +30,12 @@ class ModelTest(unittest.TestCase):
         Test the protein preprocessing
         """
         class_prep = ProteinPrep()
-        class_prep.get_values(f"{path}/test_prot.pdb", "test_prot", path)
-        test_array = get_angle(f"{path}/test_prot_values.csv", "protein")
+        class_prep.get_values(f"{path}/test_prot.pdb", "preprocess_prot", path)
+        
+        test_array = get_angle(f"{path}/preprocess_prot_values.csv", "protein")
         self.assertEqual([234.086,15.301], [test_array[0][0], test_array[0][1]])
 
+        os.remove(f"{path}/preprocess_prot_values.csv")
 
 if __name__ == "__main__":
     unittest.main()
