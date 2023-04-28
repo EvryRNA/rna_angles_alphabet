@@ -54,6 +54,7 @@ class SklearnClust(ClusteringHelper):
 
         Args:
             :param labels: an array of labels
+            :param plot: if the labels are used for plot, negative have to be changed
         Returns:
             :return an array where the labels reflect the size of their cluster
         """
