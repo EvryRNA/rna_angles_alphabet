@@ -41,9 +41,9 @@ test_documentation:
 
 all_tests: test_static_all test_complexity test_documentation test_unit_coverage
 
-# Launch pipeline with dbscan on RNA
+# Launch pipeline with dbscan on RNA and plot raw data (with --v)
 run_pipeline:
-	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna
+	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna --method dbscan --v
 
 # Compile C++ script
 CC    = g++
