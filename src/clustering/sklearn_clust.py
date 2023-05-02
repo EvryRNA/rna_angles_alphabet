@@ -3,14 +3,14 @@ import numpy as np
 from src.clustering.clustering_helper import ClusteringHelper
 from src.param_model import CONVERSION_NAME_TO_MODEL
 from src.plot_helper import plot_cluster
-from src.utils import get_angle, labels_to_seq, load_model, save_model
+from src.utils import labels_to_seq, load_model, save_model
 
 
 class SklearnClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def train_model(self, method_name: str, *args, **kwargs) -> str:
+    def train_model(self, method_name: str, x_train, *args, **kwargs) -> str:
         """
         Select a sklearn method to train a model and save it in pickle format
 
@@ -21,8 +21,6 @@ class SklearnClust(ClusteringHelper):
         Returns:
             :return the path where the model is saved in pickle format
         """
-        # Get the angle values
-        x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
 
         # Initialize the model with the right method and parameters (in param_model.py)
         conversion_name = CONVERSION_NAME_TO_MODEL.get(method_name, None)
@@ -77,7 +75,7 @@ class SklearnClust(ClusteringHelper):
             labels = labels + 1
         return labels
 
-    def predict_seq(self, model_path: str):
+    def predict_seq(self, model_path: str, x_test):
         """
         Load a model, fit the data and print the final sequence
 
@@ -86,9 +84,6 @@ class SklearnClust(ClusteringHelper):
             :param temp_dir: the path of the temporary directory
             :param mol: the type of biomolecule, protein or rna
         """
-        # Get the angle values to fit on the model
-        x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
-
         # Fit the data, get the labels and rank them with rank_labels
         predict_model = load_model(model_path)
         raw_labels = predict_model.fit_predict(x_test)

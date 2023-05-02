@@ -6,7 +6,7 @@ from src.clustering.sklearn_clust import SklearnClust
 from src.plot_helper import raw_data_plot
 from src.preprocessing.protein_prep import ProteinPrep
 from src.preprocessing.rna_prep import RNAPrep
-from src.utils import setup_dir
+from src.utils import get_angle, setup_dir
 
 
 class Pipeline:
@@ -131,13 +131,19 @@ class Pipeline:
         seq_process = class_cluster(self.temp_dir, self.mol)
 
         if model_path is None:
+            # Get the angle values
+            x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
+
             # Train the model
-            params = {"method_name": method_name}
+            params = {"method_name": method_name, "x_train": x_train}
             model_path = seq_process.train_model(**params)
 
         if self.testing_path is not None:
+            # Get the angle values to fit on the model
+            x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
+
             # Fit the data and print the sequence
-            seq_process.predict_seq(model_path)
+            seq_process.predict_seq(model_path, x_test)
 
     def main(self):
         self.preprocess_data(self.training_path, self.testing_path)

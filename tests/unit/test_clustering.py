@@ -50,7 +50,8 @@ class ModelTest(unittest.TestCase):
 
         capturedOutput = StringIO()
         sys.stdout = capturedOutput
-        class_cluster.predict_seq("tests/data/test_dbscan_rna_model.pickle")
+        class_cluster.predict_seq("tests/data/test_dbscan_rna_model.pickle",
+                                  np.array([[1, 2], [3, 4]]))
         sys.stdout = sys.__stdout__
 
         self.assertEqual("--\n", capturedOutput.getvalue())
