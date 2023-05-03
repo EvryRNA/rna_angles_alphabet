@@ -86,9 +86,11 @@ class SklearnClust(ClusteringHelper):
         """
         # Fit the data, get the labels and rank them with rank_labels
         predict_model = load_model(model_path)
-        raw_labels = predict_model.fit_predict(x_test)
+        raw_labels = predict_model.predict(x_test)
         labels = self.rank_labels(raw_labels)
 
         # Use the labels to compute and print the corresponding sequence
         seq = labels_to_seq(labels)
         print(seq)
+
+        return seq

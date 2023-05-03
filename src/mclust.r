@@ -59,8 +59,7 @@ rank_model <- function(load_model) {
 predict_labels <- function(load_model, dir) {
     path_test_data <- paste(dir, "test_values.csv", sep = "/")
 
-    test_data <- read.csv(file = path_test_data, colClasses = c("numeric",
-    "numeric", "NULL", "NULL", "NULL"))
+    test_data <- read.csv(file = path_test_data)[, 1:2]
     test_data <- na.omit(test_data)
 
     test_labels <- predict(load_model, test_data)$classification

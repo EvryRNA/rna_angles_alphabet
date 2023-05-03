@@ -5,13 +5,9 @@ import numpy as np
 import os
 import unittest
 
-import sys
-from io import StringIO 
-
-from src.utils import get_angle
+from src.utils import labels_to_seq
 from src.clustering.sklearn_clust import SklearnClust
 from src.clustering.r_clust import RClust
-from src.pipeline import Pipeline
 
 path = os.path.join("tests", "data")
 
@@ -27,37 +23,56 @@ class ModelTest(unittest.TestCase):
         self.assertEqual("models/mclust_rna_model.Rds", model)
 
     
-    def test_rank_labels(self):
+    def test_sklearn_clustering(self):
+        """
+        Test the sequence predict for each method
+        """
+        class_cluster = SklearnClust(path, "rna")
+        x_train = np.array([[1, 1], [2, 2], [8, 8], [9, 9], [50, 50]])
+        x_test = np.array([[1, 2], [7, 8], [2, 3], [0, 1], [50, 50], [8, 9]])
+
+        ### For KMeans with n_clusters = 3
+        path_model = class_cluster.train_model("kmeans", x_train)
+        final_seq = "ABAACB"
+
+        test_seq = class_cluster.predict_seq(path_model, x_test)
+        self.assertEqual(final_seq, test_seq)
+
+        ### For default Outlier
+        path_model = class_cluster.train_model("outlier", x_train)
+        final_seq = "AAAA-A"
+
+        test_seq = class_cluster.predict_seq(path_model, x_test)
+        self.assertEqual(final_seq, test_seq)
+
+        ### For Mean_Shift with bandwith = 2
+        path_model = class_cluster.train_model("mean_shift", x_train)
+        final_seq = "ABAACB"
+
+        test_seq = class_cluster.predict_seq(path_model, x_test)
+        self.assertEqual(final_seq, test_seq)
+        
+        
+    def test_rank_labels(self): 
         """
         Test the labels ranking
         """
         class_cluster = SklearnClust(path, "rna")
 
-        labels = class_cluster.rank_labels(np.array([-1, 2, 1, 1, 1, -1, 0, 2]))
-        self.assertEqual([-1, 1, 0, 0, 0, -1, 2, 1], list(labels))
+        labels = class_cluster.rank_labels(np.array([-1, 1, 0, 1]))
+        self.assertEqual([-1, 0, 1, 0], list(labels))
 
-        labels = class_cluster.rank_labels(np.array([-1, 2, 1, 1, 1, -1, 0, 2]), "plot")
-        self.assertEqual([0, 2, 1, 1, 1, 0, 3, 2], list(labels))
+        labels = class_cluster.rank_labels(np.array([-1, 1, 0, 1]), "plot")
+        self.assertEqual([0, 1, 2, 1], list(labels))
 
 
-    def test_predict_seq(self):
+    def test_labels_to_seq(self):
         """
-        Test the sequence predict
+        Test the labels to seq function
         """
-        class_cluster = SklearnClust(path, "rna")
-        class_pipe = Pipeline(None, None, path, None, "rna", None, False)
-        class_pipe.preprocess_data(f"{path}/test_rna.pdb", f"{path}/test_rna.pdb")
+        test_labels = [-1, 0, 1, 3, -1, 2, 3, 0, -1,]
+        self.assertEqual("-ABD-CDA-", labels_to_seq(test_labels))    
 
-        capturedOutput = StringIO()
-        sys.stdout = capturedOutput
-        class_cluster.predict_seq("tests/data/test_dbscan_rna_model.pickle",
-                                  np.array([[1, 2], [3, 4]]))
-        sys.stdout = sys.__stdout__
-
-        self.assertEqual("--\n", capturedOutput.getvalue())
-
-
-        
 
 if __name__ == "__main__":
     unittest.main()

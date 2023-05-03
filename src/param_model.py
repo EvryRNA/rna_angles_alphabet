@@ -16,7 +16,7 @@ class ParamModel:
     )
 
     MeanShift = dict(
-        bandwidth=None,
+        bandwidth=2,
         seeds=None,
         bin_seeding=False,
         min_bin_freq=1,
@@ -26,7 +26,7 @@ class ParamModel:
     )
 
     KMeans = dict(
-        n_clusters=7,
+        n_clusters=3,
         init="k-means++",
         n_init="auto",
         max_iter=300,
@@ -63,7 +63,7 @@ class ParamModel:
         warm_start=False,
     )
 
-    SOM = dict(m=5, n=2, dim=2, lr=1)  # Other ptions: sigma, max_iter, random_state
+    SOM = dict(m=1, n=3, dim=2, lr=1)  # Other ptions: sigma, max_iter, random_state
 
 
 # Dictionary used to find the right function and parameters for each method
