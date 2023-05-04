@@ -1,5 +1,5 @@
 """
-Unit tests to check the custering
+Unit tests to check the clustering
 """
 import numpy as np
 import os
@@ -38,13 +38,6 @@ class ModelTest(unittest.TestCase):
         test_seq = class_cluster.predict_seq(path_model, x_test)
         self.assertEqual(final_seq, test_seq)
 
-        ### For default Outlier
-        path_model = class_cluster.train_model("outlier", x_train)
-        final_seq = "AAAA-A"
-
-        test_seq = class_cluster.predict_seq(path_model, x_test)
-        self.assertEqual(final_seq, test_seq)
-
         ### For Mean_Shift with bandwith = 2
         path_model = class_cluster.train_model("mean_shift", x_train)
         final_seq = "ABAACB"
@@ -52,6 +45,13 @@ class ModelTest(unittest.TestCase):
         test_seq = class_cluster.predict_seq(path_model, x_test)
         self.assertEqual(final_seq, test_seq)
         
+        ### For default Outlier
+        path_model = class_cluster.train_model("outlier", x_train)
+        final_seq = "AAAA-A"
+
+        test_seq = class_cluster.predict_seq(path_model, x_test)
+        self.assertEqual(final_seq, test_seq)
+
         
     def test_rank_labels(self): 
         """

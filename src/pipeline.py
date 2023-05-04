@@ -138,6 +138,10 @@ class Pipeline:
             params = {"method_name": method_name, "x_train": x_train}
             model_path = seq_process.train_model(**params)
 
+            if method_name == "dbscan" or method_name == "hierarchical":
+                print(f"Warning: Predict is not available yet for {method_name} method\n")
+                return
+
         if self.testing_path is not None:
             # Get the angle values to fit on the model
             x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
