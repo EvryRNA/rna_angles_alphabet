@@ -27,9 +27,9 @@ test_static_all: format_code
 	$(PYTHON) flake8 --exclude=tests --max-line-length $(MAX_LINE_LENGTH) ${PATH_TO_CODE}
 
 # Unit tests
-unit_test:
+unit_test: compile_cpp
 	$(PYTHON) pytest ${PATH_TO_UNIT_TESTS}
-
+	
 test_unit_coverage:
 	${LINTAGE_DIR}/coverage.sh
 
@@ -41,6 +41,14 @@ test_documentation:
 
 all_tests: test_static_all test_complexity test_documentation test_unit_coverage
 
-# Launch pipeline with dbscan on RNA
+# Launch pipeline with dbscan on RNA and plot raw data (with --v)
 run_pipeline:
-	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna
+	python -m src.pipeline --training_path data/rna_training_set --testing_path data/rna_testing_set --temp_dir tmp --mol rna --method dbscan --v
+
+# Compile C++ script
+CC    = g++
+SRC1  = src/cpp_script/angle_calculation.cpp
+EXE1  = src/cpp_script/angle_calculation
+
+compile_cpp:
+	$(CC) -std=c++17 -lstdc++fs $(SRC1) -o $(EXE1)

@@ -1,60 +1,48 @@
 import os
 import pickle
+import random
 import string
 from typing import Any
 
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
 
-def list_pdb(path_dir: str, dataset: str, temp_dir: str):
+def setup_dir(temp_dir: str):
     """
-    Write the list of the pdb files of a directory in a txt file
+    Create directories used by the pipeline
 
     Args:
-        :param path_dir: the path of the directory containing the data
-        :param data: the name of the dataset used to name the txt file, training or testing
         :param temp_dir: the path of the temporary directory
     """
-    with open(f"{temp_dir}/{dataset}_set.txt", "w") as file:
-        for filename in os.listdir(path_dir):
-            file.write(f"{filename}\n")
+    # Check if the directories and create them if not
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("figures_clust", exist_ok=True)
+    os.makedirs(temp_dir, exist_ok=True)
 
 
-def text_to_csv(path_txt: str, angles_names: list):
-    """
-    Extract the angle values of a file to write them in a csv
-
-    Args:
-        :param path_txt: the path of the txt file containing tha angle values
-        :param angles_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-    """
-    with open(path_txt, "r") as filin, open(f"{path_txt[:-4]}.csv", "w") as filout:
-        filout.write(f"{angles_names[0]},{angles_names[1]}\n")
-        for line in filin:
-            values = line.split()
-
-            if values[0] != f"{angles_names[1]}" and values[0] != "NA" and values[1] != "NA":
-                filout.write(f"{float(values[1])},{float(values[0])}\n")
-
-
-def get_angle(path_csv: str):
+def get_angle(path_csv: str, mol: str) -> np.ndarray:
     """
     Extract the angle values of a csv file to write them in an array
 
     Args:
         :param path_csv: the path of the csv file
+        :param mol: the type of biomolecule, protein or rna
+    Returns:
+        return an array with the couples of angle values
     """
-    angle = []
+    raw_data = pd.read_csv(path_csv)
 
-    data = pd.read_csv(path_csv)
-    col = list(data.columns)
+    data = raw_data.dropna()
 
-    for i in range(0, len(data[col[0]].tolist())):
-        angle.append([data[col[0]].tolist()[i], data[col[1]].tolist()[i]])
+    # The column names depends on the molecule type
+    if mol == "rna":
+        angle_values = data[["ETA", "THETA"]].to_numpy()
+    elif mol == "protein":
+        angle_values = data[["PHI", "PSI"]].to_numpy()
 
-    return np.array(angle)
+    return angle_values
 
 
 def save_model(path_save_model: str, model: Any):
@@ -71,10 +59,12 @@ def save_model(path_save_model: str, model: Any):
 
 def load_model(path_load_model: str):
     """
-    Load a model in pickle format and return it
+    Load a model in pickle format
 
     Args:
         :param path_load_model: the path used to find the save model
+    Returns:
+        return the loaded model
     """
     with open(path_load_model, "rb") as model_file:
         loaded_model = pickle.load(model_file)
@@ -82,16 +72,23 @@ def load_model(path_load_model: str):
     return loaded_model
 
 
-def labels_to_seq(list_labels: list):
+def labels_to_seq(list_labels: list) -> str:
     """
     Transform the labels of a list into a string sequence
 
     Args:
-        :param list_labels: the list containing the labels
+        :param list_labels: the list containing the labels of the a file
+    Returns:
+        return a sequence in capital letters
     """
     sequence = ""
     list_structure = list(string.ascii_uppercase)
 
+    # For outlier method, changes labels -1 and 1 into -1 and 0
+    if list(set(list_labels)) == [1, -1]:
+        list_labels = [0 if x == 1 else x for x in list_labels]
+
+    # Attribute a letter to each label, "-" if -1
     for i in range(0, len(list_labels)):
         if list_labels[i] == -1:
             letter = "-"
@@ -100,3 +97,25 @@ def labels_to_seq(list_labels: list):
         sequence += letter
 
     return sequence
+
+
+def get_colors(nb_colors: int):
+    """
+    Return a list of random colors
+
+    Args:
+        :param nb_colors: the number of colors to return
+    Returns:
+        return a list of different colors
+    """
+    # The 7 base colors
+    colors = ["k", "r", "g", "b", "y", "m", "c"]
+
+    # If there are more clusters, add random ones to complete
+    if nb_colors > 7:
+        list_colors = mcolors.CSS4_COLORS
+
+        for i in range(0, nb_colors - 7):
+            colors.append(random.choice(list(list_colors.keys())))
+
+    return colors

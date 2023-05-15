@@ -1,147 +1,157 @@
 import argparse
-import os
+from typing import Any, Optional
 
-from src.clustering_method import (
-    dbscan_cluster,
-    hierarchical_cluster,
-    kmeans_cluster,
-    mean_shift_cluster,
-    predict_labels,
-)
-from src.utils import get_angle, labels_to_seq, list_pdb, text_to_csv
+from src.clustering.r_clust import RClust
+from src.clustering.sklearn_clust import SklearnClust
+from src.plot_helper import raw_data_plot
+from src.preprocessing.protein_prep import ProteinPrep
+from src.preprocessing.rna_prep import RNAPrep
+from src.utils import get_angle, setup_dir
 
 
 class Pipeline:
+    """
+    The class used to execute all the process
+
+    Attributes:
+        training_path: The path to the directory with the training data
+        testing_path: The path to the directory with the testing data
+        temp_dir: The path to the directory used for temporary files
+        method_name: The custering method to use
+        mol: The type of biomolecule to process, protein or RNA
+        model_path: The path to an existing model in pickle or Rds format
+        visu_raw: Plot the raw data if True, requires a training path
+    """
+
     def __init__(
         self,
         training_path: str,
         testing_path: str,
         temp_dir: str,
-        nb_clusters: int,
         method_name: str,
         mol: str,
+        model_path: str,
+        visu_raw: bool,
     ):
-        """
-        Initialize the different attributes
-        """
         self.training_path = training_path
         self.testing_path = testing_path
         self.temp_dir = temp_dir
-        self.nb_clusters = nb_clusters
         self.method_name = method_name
         self.mol = mol
+        self.model_path = model_path
+        self.visu_raw = visu_raw
 
-    def setup_dir(self, temp_dir: str):
-        """
-        Create a temporary directory to store transitory files
-
-        Args:
-            :param temp_dir: the path of the temporary directory
-        """
-        os.makedirs(temp_dir, exist_ok=True)
-
-    def get_train_values(self, training_path: str, temp_dir: str, angles_names: list):
-        """
-        Compute the angle values of the training dataset and store them in a csv
-
-        Args:
-            :param training_path: the path of the directory containing the pdb used for training
-            :param temp_dir: the path of the temporary directory
-            :param angles_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-        """
-        list_pdb(training_path, "training", temp_dir)
-        if angles_names[0] == "PHI":
-            os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
-                + f"{temp_dir}/result_train -p -f -t"
-            )
-        elif angles_names[0] == "ETA":
-            os.system(
-                f"src/c_code/angle -d {training_path}/ -l {temp_dir}/training_set.txt -o"
-                + f"{temp_dir}/result_train -R -p -f -t"
-            )
-        text_to_csv(f"{temp_dir}/result_train.txt", angles_names)
-
-    def get_test_values(self, testing_path: str, temp_dir: str, angles_names: list):
-        """
-        Compute the angle values of the testing dataset and store them in a csv
-
-        Args:
-            :param testing_path: the path of the directory containing the pdb to process
-            :param temp_dir: the path of the temporary directory
-            :param angles_names: names of the angles in the file, PHI-PSI for protein and
-            ETA-THETA for RNA
-        """
-        list_pdb(testing_path, "testing", temp_dir)
-        if angles_names[0] == "PHI":
-            os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
-                + f"{temp_dir}/result_test -p -f -t"
-            )
-        elif angles_names[0] == "ETA":
-            os.system(
-                f"src/c_code/angle -d {testing_path}/ -l {temp_dir}/testing_set.txt -o"
-                + f"{temp_dir}/result_test -R -p -f -t"
-            )
-        text_to_csv(f"{temp_dir}/result_test.txt", angles_names)
-
-    def train_model(
+    def preprocess_data(
         self,
-        method_name: str,
-        nb_clusters: int,
-        temp_dir: str,
+        training_path: Optional[str] = None,
+        testing_path: Optional[str] = None,
     ):
         """
-        Train a model with the training values
+        Get the angles values of a dataset in a csv
+
+        Args:
+            :param training_path: the path of the training data
+            :param testing_path: the path of the testing data
+        """
+        training_path = self.training_path if training_path is None else training_path
+        testing_path = self.testing_path if testing_path is None else testing_path
+
+        # Setup the necessary directories
+        setup_dir(self.temp_dir)
+
+        # Initialize the class depending on the type of molecule
+        class_molecule = RNAPrep if self.mol == "rna" else ProteinPrep
+
+        if self.model_path is None:
+            if training_path is None:
+                raise ValueError("No training nor model path given!")
+            else:
+                # Get the train values
+                train_angles = class_molecule()
+                train_angles.get_values(training_path, "train", self.temp_dir)
+
+                if testing_path is not None:
+                    # Get the test values
+                    test_angles = class_molecule()
+                    test_angles.get_values(testing_path, "test", self.temp_dir)
+
+        elif self.model_path is not None and testing_path is None:
+            raise ValueError("No testing path given!")
+
+        else:
+            # Get the test values
+            test_angles = class_molecule()
+            test_angles.get_values(testing_path, "test", self.temp_dir)
+
+        if self.visu_raw and training_path is not None:
+            # Plot the raw data if a training path is given
+            raw_data_plot(f"{self.temp_dir}/train_values.csv", self.mol)
+
+    def initialize_clustering_model(
+        self, method_name: Optional[str] = None, model_path: Optional[str] = None
+    ):
+        """
+        Initialize the clustering class with either R or Sklearn model
 
         Args:
             :param method_name: the name of the clustering method to use
-            :param nb_clusters: the number of clusters to be used by some methods
-            :param temp_dir: the path of the temporary directory
+            :param model_path: if a model is not given, train a new model
+        Returns:
+            :return the class of the clustering model
         """
-        x = get_angle(f"{temp_dir}/result_train.csv")
+        class_cluster = Any
 
-        if method_name == "dbscan":
-            dbscan_cluster(x, temp_dir)
-        elif method_name == "mean_shift":
-            mean_shift_cluster(x, temp_dir)
-        elif method_name == "kmeans":
-            kmeans_cluster(x, nb_clusters, temp_dir)
-        elif method_name == "hierarchical":
-            hierarchical_cluster(x, temp_dir)
+        if model_path is not None:
+            # Choose the adequate class depending on the model extension
+            if model_path.endswith(".pickle"):
+                class_cluster = SklearnClust
+            elif model_path.endswith(".Rds"):
+                class_cluster = RClust
+            else:
+                raise ValueError("When giving a model, use a .pickle or .Rds format!")
 
-    def get_sequence(self, method_name: str, temp_dir: str):
+        else:
+            if method_name is not None:
+                class_cluster = RClust if method_name == "mclust" else SklearnClust
+            else:
+                raise ValueError("No model path nor method name given!")
+
+        return class_cluster
+
+    def fit_data(self, method_name: Optional[str] = None, model_path: Optional[str] = None):
         """
-        Fit the testing values on the train model and get a representative sequence
+        Train the model, fit the testing data and print the sequence
 
         Args:
-            :param method_name: the name of the clustering method used
-            :param temp_dir: the path of the temporary directory
+            :param method_name: the name of the clustering method to use
+            :param model_path: if a model is not given, train a new model
         """
-        x = get_angle(f"{temp_dir}/result_test.csv")
-        labels = list(predict_labels(x, method_name, temp_dir))
-        seq = labels_to_seq(labels)
-        print(seq)
+        # Get the adequate class
+        class_cluster = self.initialize_clustering_model(method_name, model_path)
+        seq_process = class_cluster(self.temp_dir, self.mol)
+
+        if model_path is None:
+            # Get the angle values
+            x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
+
+            # Train the model
+            params = {"method_name": method_name, "x_train": x_train}
+            model_path = seq_process.train_model(**params)
+
+            if method_name == "dbscan" or method_name == "hierarchical":
+                print(f"Warning: Predict is not available yet for {method_name} method\n")
+                return
+
+        if self.testing_path is not None:
+            # Get the angle values to fit on the model
+            x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
+
+            # Fit the data and print the sequence
+            seq_process.predict_seq(model_path, x_test)
 
     def main(self):
-        if self.mol == "prot":
-            angles_names = ["PHI", "PSI"]
-        elif self.mol == "rna":
-            angles_names = ["ETA", "THETA"]
-
-        if self.method_name == "mclust":
-            self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles_names)
-            os.system(f"Rscript src/mclust.r train {self.temp_dir}")
-            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
-            os.system(f"Rscript src/mclust.r test {self.temp_dir}")
-        else:
-            self.setup_dir(self.temp_dir)
-            self.get_train_values(self.training_path, self.temp_dir, angles_names)
-            self.train_model(self.method_name, self.nb_clusters, self.temp_dir)
-            self.get_test_values(self.testing_path, self.temp_dir, angles_names)
-            self.get_sequence(self.method_name, self.temp_dir)
+        self.preprocess_data(self.training_path, self.testing_path)
+        self.fit_data(self.method_name, self.model_path)
 
     @staticmethod
     def get_arguments():
@@ -150,12 +160,14 @@ class Pipeline:
             "--training_path",
             dest="training_path",
             type=str,
+            default=None,
             help="The path to the directory with the training data",
         )
         parser.add_argument(
             "--testing_path",
             dest="testing_path",
             type=str,
+            default=None,
             help="The path to the directory with the testing data",
         )
         parser.add_argument(
@@ -163,30 +175,37 @@ class Pipeline:
             dest="temp_dir",
             type=str,
             default="tmp",
-            help="The path to the directory used for the temporary files",
+            help="The path to the directory used for temporary files",
         )
         parser.add_argument(
             "--method",
             dest="method_name",
             type=str,
-            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust"],
-            default="dbscan",
-            help="The custering method to use, kmeans needs nb_clusters",
-        )
-        parser.add_argument(
-            "--nb_clusters",
-            dest="nb_clusters",
-            type=int,
-            choices=range(2, 8),
-            default=7,
-            help="The number of clusters used by some clustering method",
+            choices=["dbscan", "mean_shift", "kmeans", "hierarchical", "mclust", "outlier", "som"],
+            default=None,
+            help="The custering method to use",
         )
         parser.add_argument(
             "--mol",
             dest="mol",
             type=str,
-            choices=["prot", "rna"],
+            choices=["protein", "rna"],
+            required=True,
             help="The type of biomolecule to process, protein or RNA",
+        )
+        parser.add_argument(
+            "--model",
+            dest="model_path",
+            type=str,
+            default=None,
+            help="The path to an existing model in pickle or Rds format",
+        )
+        parser.add_argument(
+            "--v",
+            dest="visu_raw",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            help="Plot the raw data if True, requires a training path",
         )
         args = parser.parse_args()
         return args

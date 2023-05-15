@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.9
 ENV LOCAL_PATH=.
 WORKDIR app
 COPY $LOCAL_PATH/requirements.txt .

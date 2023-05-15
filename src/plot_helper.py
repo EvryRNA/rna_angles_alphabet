@@ -1,37 +1,46 @@
-import random
-
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils import get_angle
+from src.utils import get_angle, get_colors
 
 
-def raw_angle(path: str):
+def raw_data_plot(path: str, mol: str):
     """
     Plot the raw data of angle values using a csv file
 
     Args:
         :param path: the name of the csv containing the angle values
+        :param mol: the type of biomolecule, protein or rna
     """
-    eta, theta = [], []
-    angle = get_angle(path)
+    x_values, y_values = [], []
+    angle_values = get_angle(path, mol)
 
-    for i in range(0, len(angle)):
-        eta.append(angle[i][0])
-        theta.append(angle[i][1])
+    # Separate the x and y values in 2 distinct lists
+    for i in range(0, len(angle_values)):
+        x_values.append(angle_values[i][0])
+        y_values.append(angle_values[i][1])
 
-    plt.scatter(eta, theta, 1, color="k")
-    plt.title("η-θ conformational space")
-    plt.xlabel("η (degrees)")
-    plt.ylabel("θ (degrees)")
+    # Choose the axis names depending on the type of molecule
+    if mol == "rna":
+        angle_names = ["η", "θ"]
+    elif mol == "protein":
+        angle_names = ["φ", "ψ"]
+    else:
+        print("\nWrong molecule type given\n")
+
+    plt.scatter(x_values, y_values, 1, color="k")
+    plt.title(f"{angle_names[0]}-{angle_names[1]} conformational space")
+    plt.xlabel(f"{angle_names[0]} (degrees)")
+    plt.ylabel(f"{angle_names[1]} (degrees)")
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
-    plt.savefig("raw_data.png")
+    plt.savefig(f"figures_clust/raw_{mol}_data.png")
+
+    print(f"\nRaw data saved in figures_clust/raw_{mol}_data.png\n")
 
 
-def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
+def plot_cluster(x, label: list, nb_clusters: int, method: str, mol: str):
     """
     Plot the results of a clustering method
 
@@ -43,12 +52,10 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
         :param method: name of the clustering method used
         :param temp_dir: the path of the temporary directory
     """
-    if nb_clusters <= 7:
-        colors = ["k", "r", "g", "b", "y", "m", "c"]
+    # Give as many colors as the number of clusters
+    colors = get_colors(nb_clusters)
 
-    elif nb_clusters > 7:
-        colors = get_colors(nb_clusters)
-
+    # Add each cluster to the plot one by one
     for i in range(0, nb_clusters):
         filter = f"label{i} = x[label == {i}]"
         exec(filter)
@@ -61,22 +68,6 @@ def plot_cluster(x, label: list, nb_clusters: int, method: str, temp_dir: str):
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
-    plt.savefig(f"{temp_dir}/{method}_cluster.png")
+    plt.savefig(f"figures_clust/{method}_{mol}_cluster.png")
 
-    return
-
-
-def get_colors(nb_colors: int):
-    """
-    Return a list of random colors
-
-    Args:
-        :param nb_colors: the number of colors to return
-    """
-    colors = ["k"]
-    list_colors = mcolors.CSS4_COLORS
-
-    for i in range(1, nb_colors):
-        colors.append(random.choice(list(list_colors.keys())))
-
-    return colors
+    print(f"Clustering saved in figures_clust/{method}_{mol}_cluster.png\n")
