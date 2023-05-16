@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils import get_angle, get_colors
+from src.utils.utils import get_angle, get_colors
 
 
 def raw_data_plot(path: str, mol: str):

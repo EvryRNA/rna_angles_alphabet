@@ -1,12 +1,11 @@
 import argparse
-from typing import Any, Optional
+from typing import Optional
 
 from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
-from src.plot_helper import raw_data_plot
-from src.preprocessing.protein_prep import ProteinPrep
-from src.preprocessing.rna_prep import RNAPrep
-from src.utils import get_angle, setup_dir
+from src.preprocessing.preprocess_helper import PreprocessHelper
+from src.utils.plot_helper import raw_data_plot
+from src.utils.utils import get_angle, setup_dir
 
 
 class Pipeline:
@@ -16,8 +15,8 @@ class Pipeline:
     Attributes:
         training_path: The path to the directory with the training data
         testing_path: The path to the directory with the testing data
-        temp_dir: The path to the directory used for temporary files
-        method_name: The custering method to use
+        tmp_dir: The path to the directory used for temporary files
+        method_name: The clustering method to use
         mol: The type of biomolecule to process, protein or RNA
         model_path: The path to an existing model in pickle or Rds format
         visu_raw: Plot the raw data if True, requires a training path
@@ -27,7 +26,7 @@ class Pipeline:
         self,
         training_path: str,
         testing_path: str,
-        temp_dir: str,
+        tmp_dir: str,
         method_name: str,
         mol: str,
         model_path: str,
@@ -35,7 +34,7 @@ class Pipeline:
     ):
         self.training_path = training_path
         self.testing_path = testing_path
-        self.temp_dir = temp_dir
+        self.tmp_dir = tmp_dir
         self.method_name = method_name
         self.mol = mol
         self.model_path = model_path
@@ -57,35 +56,32 @@ class Pipeline:
         testing_path = self.testing_path if testing_path is None else testing_path
 
         # Setup the necessary directories
-        setup_dir(self.temp_dir)
-
-        # Initialize the class depending on the type of molecule
-        class_molecule = RNAPrep if self.mol == "rna" else ProteinPrep
+        setup_dir(self.tmp_dir)
 
         if self.model_path is None:
             if training_path is None:
                 raise ValueError("No training nor model path given!")
             else:
                 # Get the train values
-                train_angles = class_molecule()
-                train_angles.get_values(training_path, "train", self.temp_dir)
+                train_angles = PreprocessHelper(self.mol)
+                train_angles.get_values(training_path, "train", self.tmp_dir)
 
                 if testing_path is not None:
                     # Get the test values
-                    test_angles = class_molecule()
-                    test_angles.get_values(testing_path, "test", self.temp_dir)
+                    test_angles = PreprocessHelper(self.mol)
+                    test_angles.get_values(testing_path, "test", self.tmp_dir)
 
         elif self.model_path is not None and testing_path is None:
             raise ValueError("No testing path given!")
 
         else:
             # Get the test values
-            test_angles = class_molecule()
-            test_angles.get_values(testing_path, "test", self.temp_dir)
+            test_angles = PreprocessHelper(self.mol)
+            test_angles.get_values(testing_path, "test", self.tmp_dir)
 
         if self.visu_raw and training_path is not None:
             # Plot the raw data if a training path is given
-            raw_data_plot(f"{self.temp_dir}/train_values.csv", self.mol)
+            raw_data_plot(f"{self.tmp_dir}/train_values.csv", self.mol)
 
     def initialize_clustering_model(
         self, method_name: Optional[str] = None, model_path: Optional[str] = None
@@ -99,20 +95,18 @@ class Pipeline:
         Returns:
             :return the class of the clustering model
         """
-        class_cluster = Any
-
         if model_path is not None:
             # Choose the adequate class depending on the model extension
             if model_path.endswith(".pickle"):
                 class_cluster = SklearnClust
             elif model_path.endswith(".Rds"):
-                class_cluster = RClust
+                class_cluster = RClust  # type: ignore
             else:
                 raise ValueError("When giving a model, use a .pickle or .Rds format!")
 
         else:
             if method_name is not None:
-                class_cluster = RClust if method_name == "mclust" else SklearnClust
+                class_cluster = RClust if method_name == "mclust" else SklearnClust  # type: ignore
             else:
                 raise ValueError("No model path nor method name given!")
 
@@ -128,11 +122,11 @@ class Pipeline:
         """
         # Get the adequate class
         class_cluster = self.initialize_clustering_model(method_name, model_path)
-        seq_process = class_cluster(self.temp_dir, self.mol)
+        seq_process = class_cluster(self.tmp_dir, self.mol)
 
         if model_path is None:
             # Get the angle values
-            x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
+            x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
 
             # Train the model
             params = {"method_name": method_name, "x_train": x_train}
@@ -144,7 +138,7 @@ class Pipeline:
 
         if self.testing_path is not None:
             # Get the angle values to fit on the model
-            x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
+            x_test = get_angle(f"{self.tmp_dir}/test_values.csv", self.mol)
 
             # Fit the data and print the sequence
             seq_process.predict_seq(model_path, x_test)
@@ -171,8 +165,8 @@ class Pipeline:
             help="The path to the directory with the testing data",
         )
         parser.add_argument(
-            "--temp_dir",
-            dest="temp_dir",
+            "--tmp_dir",
+            dest="tmp_dir",
             type=str,
             default="tmp",
             help="The path to the directory used for temporary files",
