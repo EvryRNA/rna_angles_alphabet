@@ -26,7 +26,7 @@ class ParamModel:
     )
 
     KMeans = dict(
-        n_clusters=8,  # default = 8
+        n_clusters=16,  # default = 16
         init="k-means++",
         n_init="auto",
         max_iter=300,
@@ -63,7 +63,7 @@ class ParamModel:
         warm_start=False,
     )
 
-    SOM = dict(m=2, n=5, dim=2, lr=1)  # default => m = 2, n = 5
+    SOM = dict(m=4, n=4, dim=2, lr=1, max_iter=300)
     # Other options: sigma, max_iter, random_state
 
 
