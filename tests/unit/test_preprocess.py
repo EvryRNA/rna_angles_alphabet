@@ -4,9 +4,8 @@ Unit tests to check the preprocessing
 import os
 import unittest
 
-from src.utils import get_angle
-from src.preprocessing.protein_prep import ProteinPrep
-from src.preprocessing.rna_prep import RNAPrep
+from src.utils.utils import get_angle
+from src.preprocessing.preprocess_helper import PreprocessHelper
 
 path = os.path.join("tests", "data")
 
@@ -16,7 +15,7 @@ class ModelTest(unittest.TestCase):
         """
         Test the rna preprocessing
         """
-        class_prep = RNAPrep()
+        class_prep = PreprocessHelper("rna")
         class_prep.get_values(f"{path}/test_rna.pdb", "preprocess_rna", path)
 
         test_array = get_angle(f"{path}/preprocess_rna_values.csv", "rna")
@@ -29,7 +28,7 @@ class ModelTest(unittest.TestCase):
         """
         Test the protein preprocessing
         """
-        class_prep = ProteinPrep()
+        class_prep = PreprocessHelper("prot")
         class_prep.get_values(f"{path}/test_prot.pdb", "preprocess_prot", path)
         
         test_array = get_angle(f"{path}/preprocess_prot_values.csv", "protein")

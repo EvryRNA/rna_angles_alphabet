@@ -7,7 +7,7 @@ import unittest
 from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
 from src.pipeline import Pipeline
-from src.utils import get_angle
+from src.utils.utils import get_angle
 
 path = os.path.join("tests", "data")
 

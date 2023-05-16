@@ -2,15 +2,15 @@ import numpy as np
 
 from src.clustering.clustering_helper import ClusteringHelper
 from src.param_model import CONVERSION_NAME_TO_MODEL
-from src.plot_helper import plot_cluster
-from src.utils import labels_to_seq, load_model, save_model
+from src.utils.plot_helper import plot_cluster
+from src.utils.utils import labels_to_seq, load_model, save_model
 
 
 class SklearnClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def train_model(self, method_name: str, x_train, *args, **kwargs) -> str:
+    def train_model(self, method_name: str, x_train, params=None, *args, **kwargs) -> str:
         """
         Select a sklearn method to train a model and save it in pickle format
 
@@ -18,6 +18,7 @@ class SklearnClust(ClusteringHelper):
             :param method_name: the name of the clustering method to use
             :param temp_dir: the path of the temporary directory
             :param mol: the type of biomolecule, protein or rna
+            :param params: the parameters of the method to use
         Returns:
             :return the path where the model is saved in pickle format
         """
@@ -26,7 +27,11 @@ class SklearnClust(ClusteringHelper):
         conversion_name = CONVERSION_NAME_TO_MODEL.get(method_name, None)
         if conversion_name is None:
             raise NotImplementedError(f"Model {method_name} not found")
-        class_, params = conversion_name["class"], conversion_name["params"]
+        class_ = conversion_name["class"]
+
+        if params is None:
+            params = conversion_name["params"]
+
         model = class_(**params)
 
         print(f"\n{method_name} clustering starts for {self.mol} data")
