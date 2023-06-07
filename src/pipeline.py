@@ -1,4 +1,5 @@
 import argparse
+import os
 from typing import Optional
 
 from src.clustering.r_clust import RClust
@@ -44,6 +45,7 @@ class Pipeline:
         self,
         training_path: Optional[str] = None,
         testing_path: Optional[str] = None,
+        training_done: Optional[bool] = False,
     ):
         """
         Get the angles values of a dataset in a csv
@@ -51,6 +53,7 @@ class Pipeline:
         Args:
             :param training_path: the path of the training data
             :param testing_path: the path of the testing data
+            :param training_done: check if the training is already done
         """
         training_path = self.training_path if training_path is None else training_path
         testing_path = self.testing_path if testing_path is None else testing_path
@@ -61,21 +64,25 @@ class Pipeline:
         if self.model_path is None:
             if training_path is None:
                 raise ValueError("No training nor model path given!")
-            else:
+            elif not training_done:
                 # Get the train values
                 train_angles = PreprocessHelper(self.mol)
                 train_angles.get_values(training_path, "train", self.tmp_dir)
 
-                if testing_path is not None:
-                    # Get the test values
-                    test_angles = PreprocessHelper(self.mol)
-                    test_angles.get_values(testing_path, "test", self.tmp_dir)
+            if testing_path is not None:
+                # Get the test values
+                if os.path.exists(f"{self.tmp_dir}/test_values.csv"):
+                    os.remove(f"{self.tmp_dir}/test_values.csv")
+                test_angles = PreprocessHelper(self.mol)
+                test_angles.get_values(testing_path, "test", self.tmp_dir)
 
         elif self.model_path is not None and testing_path is None:
             raise ValueError("No testing path given!")
 
         else:
             # Get the test values
+            if os.path.exists(f"{self.tmp_dir}/test_values.csv"):
+                os.remove(f"{self.tmp_dir}/test_values.csv")
             test_angles = PreprocessHelper(self.mol)
             test_angles.get_values(testing_path, "test", self.tmp_dir)
 
@@ -112,40 +119,67 @@ class Pipeline:
 
         return class_cluster
 
-    def fit_data(self, method_name: Optional[str] = None, model_path: Optional[str] = None):
+    def fit_data(
+        self,
+        method_name: Optional[str] = None,
+        model_path: Optional[str] = None,
+        file: Optional[str] = None,
+        training_done: Optional[bool] = False,
+    ):
         """
         Train the model, fit the testing data and print the sequence
 
         Args:
             :param method_name: the name of the clustering method to use
             :param model_path: if a model is not given, train a new model
+            :param file: name of the current pdb file to process
+            :param training_done: check if the training is already done
         """
         # Get the adequate class
         class_cluster = self.initialize_clustering_model(method_name, model_path)
         seq_process = class_cluster(self.tmp_dir, self.mol)
 
         if model_path is None:
-            # Get the angle values
-            x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
+            if not training_done:
+                # Get the angle values
+                x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
 
-            # Train the model
-            params = {"method_name": method_name, "x_train": x_train}
-            model_path = seq_process.train_model(**params)
+                # Train the model
+                params = {"method_name": method_name, "x_train": x_train}
+                model_path = seq_process.train_model(**params)
 
-            if method_name == "dbscan" or method_name == "hierarchical":
-                print(f"Warning: Predict is not available yet for {method_name} method\n")
-                return
+                if method_name == "dbscan" or method_name == "hierarchical":
+                    print(f"Warning: Predict is not available yet for {method_name} method\n")
+                    return
+            else:
+                model_path = f"models/{method_name}_{self.mol}_model.pickle"
 
         if self.testing_path is not None:
             # Get the angle values to fit on the model
             x_test = get_angle(f"{self.tmp_dir}/test_values.csv", self.mol)
 
             # Fit the data and print the sequence
-            seq_process.predict_seq(model_path, x_test)
+            final_seq = seq_process.predict_seq(model_path, x_test)
+            with open("list_seq.fasta", "a") as list_seq:
+                list_seq.write(f">{file}\n")
+                list_seq.write(f"{final_seq}\n")
 
     def main(self):
-        self.preprocess_data(self.training_path, self.testing_path)
-        self.fit_data(self.method_name, self.model_path)
+        if os.path.exists("list_seq.fasta"):
+            os.remove("list_seq.fasta")
+
+        if self.testing_path[-4:] != ".pdb":
+            training_done = False
+            for file in os.listdir(self.testing_path):
+                self.preprocess_data(
+                    self.training_path, f"{self.testing_path}/{file}", training_done
+                )
+                self.fit_data(self.method_name, self.model_path, file, training_done)
+                training_done = True
+
+        else:
+            self.preprocess_data(self.training_path, self.testing_path)
+            self.fit_data(self.method_name, self.model_path)
 
     @staticmethod
     def get_arguments():

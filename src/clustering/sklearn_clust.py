@@ -34,7 +34,7 @@ class SklearnClust(ClusteringHelper):
 
         model = class_(**params)
 
-        print(f"\n{method_name} clustering starts for {self.mol} data")
+        print(f"{method_name} clustering starts for {self.mol} data")
 
         raw_labels = model.fit_predict(x_train)
         nb_clusters = len(np.unique(raw_labels))
@@ -42,7 +42,7 @@ class SklearnClust(ClusteringHelper):
         # Rank the labels by the size of their cluster
         labels = self.rank_labels(raw_labels, "plot")
 
-        print(f"\n{method_name} clustering done, number of clusters :", nb_clusters, "\n")
+        print(f"{method_name} clustering done, number of clusters :", nb_clusters, "\n")
         print(f"Model saved in models/{method_name}_{self.mol}_model.pickle", "\n")
 
         # Save the model and plot the clusters
@@ -96,6 +96,6 @@ class SklearnClust(ClusteringHelper):
 
         # Use the labels to compute and print the corresponding sequence
         seq = labels_to_seq(labels)
-        print(seq)
+        print(f"Final sequence:\n{seq}\n")
 
         return seq
