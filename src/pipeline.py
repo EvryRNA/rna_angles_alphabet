@@ -168,7 +168,7 @@ class Pipeline:
         if os.path.exists("list_seq.fasta"):
             os.remove("list_seq.fasta")
 
-        if self.testing_path[-4:] != ".pdb":
+        if self.testing_path is not None and self.testing_path[-4:] != ".pdb":
             training_done = False
             for file in os.listdir(self.testing_path):
                 self.preprocess_data(
