@@ -4,7 +4,7 @@ with open("list_seq.fasta", 'r') as file_seq:
     list_seq, list_pdb = [], []
     for line in file_seq:
         if line[0] == ">":
-            list_pdb.append(line[:-5])
+            list_pdb.append(line[:-5].upper())
         else:
             list_seq.append(line[:-1])
         
