@@ -26,7 +26,7 @@ class ParamModel:
     )
 
     KMeans = dict(
-        n_clusters=16,  # default = 16
+        n_clusters=8,  # default = 16
         init="k-means++",
         n_init="auto",
         max_iter=300,
