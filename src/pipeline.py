@@ -46,6 +46,7 @@ class Pipeline:
         training_path: Optional[str] = None,
         testing_path: Optional[str] = None,
         training_done: Optional[bool] = False,
+        plot_done: Optional[bool] = False
     ):
         """
         Get the angles values of a dataset in a csv
@@ -54,6 +55,7 @@ class Pipeline:
             :param training_path: the path of the training data
             :param testing_path: the path of the testing data
             :param training_done: check if the training is already done
+            :param training_done: check if the raw data plot is already done
         """
         training_path = self.training_path if training_path is None else training_path
         testing_path = self.testing_path if testing_path is None else testing_path
@@ -86,7 +88,7 @@ class Pipeline:
             test_angles = PreprocessHelper(self.mol)
             test_angles.get_values(testing_path, "test", self.tmp_dir)
 
-        if self.visu_raw and training_path is not None:
+        if self.visu_raw and not plot_done and training_path is not None:
             # Plot the raw data if a training path is given
             raw_data_plot(f"{self.tmp_dir}/train_values.csv", self.mol)
 
@@ -169,13 +171,12 @@ class Pipeline:
             os.remove("list_seq.fasta")
 
         if self.testing_path is not None and self.testing_path[-4:] != ".pdb":
-            training_done = False
+            training_done, plot_done = False, False
             for file in os.listdir(self.testing_path):
                 self.preprocess_data(
-                    self.training_path, f"{self.testing_path}/{file}", training_done
-                )
+                    self.training_path, f"{self.testing_path}/{file}", training_done, plot_done)
                 self.fit_data(self.method_name, self.model_path, file, training_done)
-                training_done = True
+                training_done, plot_done = True, True
 
         else:
             self.preprocess_data(self.training_path, self.testing_path)
