@@ -10,7 +10,7 @@ temp_dir <- args[2]
 create_model <- function(dir, mol) {
     path_train_data <- paste(dir, "train_values.csv", sep = "/")
     train_data <- read.csv(file = path_train_data, colClasses = c("numeric",
-    "numeric", "NULL", "NULL", "NULL"))
+    "numeric", "NULL", "NULL", "NULL", "NULL"))
     train_data <- na.omit(train_data)
 
     # Mclust method with all parameters

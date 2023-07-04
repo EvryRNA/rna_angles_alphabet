@@ -6,6 +6,7 @@ from src.clustering.clustering_helper import ClusteringHelper
 class RClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.method = "mclust"
 
     def train_model(self, *args, **kwargs) -> str:
         """
@@ -17,9 +18,9 @@ class RClust(ClusteringHelper):
         Returns:
             :return the path where the model is saved in Rds format
         """
-        os.system(f"Rscript src/r_script/mclust.r train {self.temp_dir} {self.mol}")
+        os.system(f"Rscript src/r_script/{self.method}.r train {self.temp_dir} {self.mol}")
 
-        return f"models/mclust_{self.mol}_model.Rds"
+        return f"models/{self.method}_{self.mol}_model.Rds"
 
     def predict_seq(self, model_path: str, *args, **kwargs):
         """
@@ -29,4 +30,4 @@ class RClust(ClusteringHelper):
             :param temp_dir: the path of the temporary directory
             :param model_path: the path to the saved model to use, in Rds format
         """
-        os.system(f"Rscript src/r_script/mclust.r test {self.temp_dir} {model_path}")
+        os.system(f"Rscript src/r_script/{self.method}.r test {self.temp_dir} {model_path}")
