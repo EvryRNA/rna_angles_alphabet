@@ -115,7 +115,10 @@ class Pipeline:
 
         else:
             if method_name is not None:
-                class_cluster = RClust if method_name == "mclust" else SklearnClust  # type: ignore
+                if method_name == "mclust" or  method_name == "dbscan":
+                    class_cluster = RClust 
+                else:
+                    class_cluster = SklearnClust  # type: ignore
             else:
                 raise ValueError("No model path nor method name given!")
 
@@ -138,8 +141,11 @@ class Pipeline:
             :param training_done: check if the training is already done
         """
         # Get the adequate class
+        with open("list_seq.fasta", "a") as list_seq:
+            list_seq.write(f">{file}\n")
+
         class_cluster = self.initialize_clustering_model(method_name, model_path)
-        seq_process = class_cluster(self.tmp_dir, self.mol)
+        seq_process = class_cluster(self.tmp_dir, self.mol, self.method_name)
 
         if model_path is None:
             if not training_done:
@@ -150,21 +156,25 @@ class Pipeline:
                 params = {"method_name": method_name, "x_train": x_train}
                 model_path = seq_process.train_model(**params)
 
-                if method_name == "dbscan" or method_name == "hierarchical":
-                    print(f"Warning: Predict is not available yet for {method_name} method\n")
+                if method_name == "hierarchical":
+                    print(f"Warning: Predict not available for {method_name} method\n")
                     return
+            
             else:
-                model_path = f"models/{method_name}_{self.mol}_model.pickle"
+                if method_name == "mclust" or method_name == "dbscan":
+                    model_path = f"models/{method_name}_{self.mol}_model.Rds"
+                else:
+                    model_path = f"models/{method_name}_{self.mol}_model.pickle"
 
         if self.testing_path is not None:
             # Get the angle values to fit on the model
             x_test = get_angle(f"{self.tmp_dir}/test_values.csv", self.mol)
-
+            
             # Fit the data and print the sequence
-            final_seq = seq_process.predict_seq(model_path, x_test)
             with open("list_seq.fasta", "a") as list_seq:
-                list_seq.write(f">{file}\n")
-                list_seq.write(f"{final_seq}\n")
+                final_seq = seq_process.predict_seq(model_path, x_test)
+                if model_path.endswith(".pickle"):
+                    list_seq.write(f"{final_seq}\n")
 
     def main(self):
         if os.path.exists("list_seq.fasta"):

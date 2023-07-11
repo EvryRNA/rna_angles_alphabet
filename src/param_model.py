@@ -4,17 +4,6 @@ from sklearn_som.som import SOM
 
 
 class ParamModel:
-    DBSCAN = dict(
-        eps=8,  # default = 8
-        min_samples=12,  # default = 12
-        metric="euclidean",
-        metric_params=None,
-        algorithm="auto",
-        leaf_size=30,
-        p=None,
-        n_jobs=None,
-    )
-
     MeanShift = dict(
         bandwidth=None,  # default = None
         seeds=None,
@@ -69,7 +58,6 @@ class ParamModel:
 
 # Dictionary used to find the right function and parameters for each method
 CONVERSION_NAME_TO_MODEL = {
-    "dbscan": {"class": DBSCAN, "params": ParamModel.DBSCAN},
     "mean_shift": {"class": MeanShift, "params": ParamModel.MeanShift},
     "kmeans": {"class": KMeans, "params": ParamModel.KMeans},
     "hierarchical": {"class": AgglomerativeClustering, "params": ParamModel.Hierarchical},

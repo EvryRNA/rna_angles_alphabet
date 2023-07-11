@@ -74,7 +74,7 @@ arrange_labels <- function(test_labels, ranked_model_labels) {
         test_labels[i] <- grep(test_labels[i], ranked_model_labels)
         sequence <- paste(sequence, LETTERS[test_labels[i]])
     }
-    print(sequence)
+    cat(sequence, file = "list_seq.fasta", sep = "\n", append = TRUE)
 }
 
 

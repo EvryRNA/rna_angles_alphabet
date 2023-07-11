@@ -16,13 +16,13 @@ create_model <- function(dir, mol) {
     model_dbscan <- dbscan(train_data, eps = 8, minPts = 12, weights = NULL,
     borderPoints = TRUE)
 
-    path_save_model <- paste("models/dbscan_clust_", mol, "_model.Rds",
+    path_save_model <- paste("models/dbscan_", mol, "_model.Rds",
     sep = "")
     saveRDS(model_dbscan, path_save_model)
 
     #Save the cluster figure
     # Open png file
-    path_png <- paste("figures_clust/dbscan_clust_", mol, "_cluster.png",
+    path_png <- paste("figures_clust/dbscan_", mol, "_cluster.png",
     sep = "")
     png(path_png)
 
@@ -31,49 +31,52 @@ create_model <- function(dir, mol) {
 
     # Close png file
     invisible(dev.off())
-    path_save_png <- paste("\nClustering save: figures_clust/dbscan_clust_",
+    path_save_png <- paste("\nClustering save: figures_clust/dbscan_",
     mol, "_cluster.png\n\n", sep = "")
     cat(path_save_png)
 }
 
 
-# # Load the model
-# test_model <- function(dir, model_path) {
-#     load_model <- readRDS(model_path)
-#     print(summary(load_model))
-#     return(load_model)
-# }
+# Load the model
+test_model <- function(dir, model_path) {
+    load_model <- readRDS(model_path)
+    print(summary(load_model))
+    return(load_model)
+}
 
 
-# # Rank the model labels
-# rank_model <- function(load_model) {
-#     raw_model_labels <- table(load_model$classification)
-#     ranked_model_labels <- order(raw_model_labels, decreasing = TRUE)
-#     return(ranked_model_labels)
-# }
+# Rank the model labels
+rank_model <- function(load_model) {
+    raw_model_labels <- table(load_model$classification)
+    ranked_model_labels <- order(raw_model_labels, decreasing = TRUE)
+    return(ranked_model_labels)
+}
 
 
-# # Predict the test labels
-# predict_labels <- function(load_model, dir) {
-#     path_test_data <- paste(dir, "test_values.csv", sep = "/")
+# Predict the test labels
+predict_labels <- function(load_model, dir) {
+    path_train_data <- paste(dir, "train_values.csv", sep = "/")
+    train_data <- read.csv(file = path_train_data, colClasses = c("numeric",
+    "numeric", "NULL", "NULL", "NULL", "NULL"))
+    train_data <- na.omit(train_data)
 
-#     test_data <- read.csv(file = path_test_data)[, 1:2]
-#     test_data <- na.omit(test_data)
+    path_test_data <- paste(dir, "test_values.csv", sep = "/")
+    test_data <- read.csv(file = path_test_data)[, 1:2]
+    test_data <- na.omit(test_data)
 
-#     test_labels <- predict(load_model, test_data)$classification
-#     return(test_labels)
-# }
+    test_labels <- predict(load_model, test_data, train_data)
+    return(test_labels)
+}
 
 
-# # Return a sequence from the labels
-# arrange_labels <- function(test_labels, ranked_model_labels) {
-#     sequence <- ""
-#     for (i in 1:length(test_labels)) { # nolint: seq_linter.
-#         test_labels[i] <- grep(test_labels[i], ranked_model_labels)
-#         sequence <- paste(sequence, LETTERS[test_labels[i]])
-#     }
-#     print(sequence)
-# }
+# Return a sequence from the labels
+arrange_labels <- function(test_labels, ranked_model_labels) {
+    sequence <- ""
+    for (i in 1:length(test_labels)) { # nolint: seq_linter.
+        sequence <- paste(sequence, LETTERS[test_labels[i]], sep = "")
+    }
+    cat(sequence, file = "list_seq.fasta", sep = "\n", append = TRUE)
+}
 
 
 if (args[1] == "train") {
