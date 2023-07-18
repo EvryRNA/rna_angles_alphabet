@@ -21,7 +21,7 @@ class RClust(ClusteringHelper):
 
         return f"models/{self.method_name}_{self.mol}_model.Rds"
 
-    def predict_seq(self, model_path: str, *args, **kwargs):
+    def predict_seq(self, model_path: str, file_name: str, *args, **kwargs):
         """
         Execute a R script to load a model, fit the data and print the final sequence
 
@@ -29,5 +29,5 @@ class RClust(ClusteringHelper):
             :param temp_dir: the path of the temporary directory
             :param model_path: the path to the saved model to use, in Rds format
         """
-        os.system(f"Rscript src/r_script/{self.method_name}.r test {self.temp_dir} {model_path}")
+        os.system(f"Rscript src/r_script/{self.method_name}.r {file_name} {self.temp_dir} {model_path}")
         

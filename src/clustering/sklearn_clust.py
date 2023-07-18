@@ -87,7 +87,6 @@ class SklearnClust(ClusteringHelper):
         Args:
             :param model_path: the path to the saved model to use, in pickle format
             :param temp_dir: the path of the temporary directory
-            :param mol: the type of biomolecule, protein or rna
         """
         # Fit the data, get the labels and rank them with rank_labels
         predict_model = load_model(model_path)
@@ -96,6 +95,5 @@ class SklearnClust(ClusteringHelper):
 
         # Use the labels to compute and print the corresponding sequence
         seq = labels_to_seq(labels)
-        print(f"Final sequence:\n{seq}\n")
 
         return seq

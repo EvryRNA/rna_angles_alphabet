@@ -44,9 +44,7 @@ class Pipeline:
     def preprocess_data(
         self,
         training_path: Optional[str] = None,
-        testing_path: Optional[str] = None,
-        training_done: Optional[bool] = False,
-        plot_done: Optional[bool] = False
+        testing_path: Optional[str] = None
     ):
         """
         Get the angles values of a dataset in a csv
@@ -66,29 +64,32 @@ class Pipeline:
         if self.model_path is None:
             if training_path is None:
                 raise ValueError("No training nor model path given!")
-            elif not training_done:
+            else:
                 # Get the train values
                 train_angles = PreprocessHelper(self.mol)
                 train_angles.get_values(training_path, self.tmp_dir)
 
             if testing_path is not None:
                 # Get the test values
-                if os.path.exists(f"{self.tmp_dir}/test_values.csv"):
-                    os.remove(f"{self.tmp_dir}/test_values.csv")
-                test_angles = PreprocessHelper(self.mol)
-                test_angles.get_values(testing_path, self.tmp_dir)
+                if testing_path.endswith(".pdb"):
+                    test_angles = PreprocessHelper(self.mol)
+                    test_angles.get_values(testing_path, self.tmp_dir)
+
+                else:
+                    for file in os.listdir(testing_path):
+                        test_angles = PreprocessHelper(self.mol)
+                        test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
         elif self.model_path is not None and testing_path is None:
             raise ValueError("No testing path given!")
 
         else:
             # Get the test values
-            if os.path.exists(f"{self.tmp_dir}/test_values.csv"):
-                os.remove(f"{self.tmp_dir}/test_values.csv")
-            test_angles = PreprocessHelper(self.mol)
-            test_angles.get_values(testing_path, self.tmp_dir)
+            for file in os.listdir(testing_path):
+                    test_angles = PreprocessHelper(self.mol)
+                    test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
-        if self.visu_raw and not plot_done and training_path is not None:
+        if self.visu_raw and training_path is not None:
             # Plot the raw data if a training path is given
             raw_data_plot(f"{self.tmp_dir}/train_values.csv", self.mol)
 
@@ -127,9 +128,7 @@ class Pipeline:
     def fit_data(
         self,
         method_name: Optional[str] = None,
-        model_path: Optional[str] = None,
-        file: Optional[str] = None,
-        training_done: Optional[bool] = False,
+        model_path: Optional[str] = None
     ):
         """
         Train the model, fit the testing data and print the sequence
@@ -137,60 +136,53 @@ class Pipeline:
         Args:
             :param method_name: the name of the clustering method to use
             :param model_path: if a model is not given, train a new model
-            :param file: name of the current pdb file to process
-            :param training_done: check if the training is already done
         """
         # Get the adequate class
-        with open("list_seq.fasta", "a") as list_seq:
-            list_seq.write(f">{file}\n")
-
         class_cluster = self.initialize_clustering_model(method_name, model_path)
         seq_process = class_cluster(self.tmp_dir, self.mol, self.method_name)
 
         if model_path is None:
-            if not training_done:
-                # Get the angle values
-                x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
+            # Get the angle values
+            x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
 
-                # Train the model
-                params = {"method_name": method_name, "x_train": x_train}
-                model_path = seq_process.train_model(**params)
+            # Train the model
+            params = {"method_name": method_name, "x_train": x_train}
+            model_path = seq_process.train_model(**params)
 
-                if method_name == "hierarchical":
-                    print(f"Warning: Predict not available for {method_name} method\n")
-                    return
+            if method_name == "hierarchical":
+                print(f"Warning: Predict not available for {method_name} method\n")
+                return
             
-            else:
-                if method_name == "mclust" or method_name == "dbscan":
-                    model_path = f"models/{method_name}_{self.mol}_model.Rds"
-                else:
-                    model_path = f"models/{method_name}_{self.mol}_model.pickle"
-
         if self.testing_path is not None:
-            # Get the angle values to fit on the model
-            x_test = get_angle(f"{self.tmp_dir}/test_values.csv", self.mol)
-            
-            # Fit the data and print the sequence
-            with open("list_seq.fasta", "a") as list_seq:
-                final_seq = seq_process.predict_seq(model_path, x_test)
-                if model_path.endswith(".pickle"):
-                    list_seq.write(f"{final_seq}\n")
+            if model_path.endswith(".pickle"):
+                for file in os.listdir(self.testing_path): 
+                    # Get the angle values to fit on the model
+                    x_test = get_angle(f"{self.tmp_dir}/{file[-8:-4]}_values.csv",
+                                    self.mol)
+                    
+                    # Fit the data and print the sequence
+                    with open("list_seq.fasta", "a") as list_seq:
+                        list_seq.write(f">{file[-8:-4]}\n")
+
+                        final_seq = seq_process.predict_seq(model_path, x_test)
+                        print(f"Sequence for {file[:-4]}:", final_seq)
+                        list_seq.write(f"{final_seq}\n")
+
+            elif model_path.endswith(".Rds"):
+                for file in os.listdir(self.testing_path):
+                    # Fit the data and print the sequence
+                    with open("list_seq.fasta", "a") as list_seq:
+                        list_seq.write(f">{file[-8:-4]}\n")
+
+                    final_seq = seq_process.predict_seq(model_path, file[-8:-4])
+                    print(f"Sequence for {file[-8:-4]} saved")
+
+        print("All sequences saved in list_seq.fasta")
 
     def main(self):
-        if os.path.exists("list_seq.fasta"):
-            os.remove("list_seq.fasta")
 
-        if self.testing_path is not None and self.testing_path[-4:] != ".pdb":
-            training_done, plot_done = False, False
-            for file in os.listdir(self.testing_path):
-                self.preprocess_data(
-                    self.training_path, f"{self.testing_path}/{file}", training_done, plot_done)
-                self.fit_data(self.method_name, self.model_path, file, training_done)
-                training_done, plot_done = True, True
-
-        else:
-            self.preprocess_data(self.training_path, self.testing_path)
-            self.fit_data(self.method_name, self.model_path)
+        self.preprocess_data(self.training_path, self.testing_path)
+        self.fit_data(self.method_name, self.model_path)
 
     @staticmethod
     def get_arguments():
