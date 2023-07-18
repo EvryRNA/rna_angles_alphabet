@@ -20,7 +20,7 @@ class PreprocessHelper:
         else:
             print("start of preprocessing for the training")
             data_name = "train"
-        
+
         args = "-R" if self.is_rna else ""
         command = (
             f"src/cpp_script/angle_calculation -d {data_path} "

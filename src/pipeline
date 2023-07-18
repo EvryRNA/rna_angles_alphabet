@@ -42,9 +42,7 @@ class Pipeline:
         self.visu_raw = visu_raw
 
     def preprocess_data(
-        self,
-        training_path: Optional[str] = None,
-        testing_path: Optional[str] = None
+        self, training_path: Optional[str] = None, testing_path: Optional[str] = None
     ):
         """
         Get the angles values of a dataset in a csv
@@ -86,8 +84,8 @@ class Pipeline:
         else:
             # Get the test values
             for file in os.listdir(testing_path):
-                    test_angles = PreprocessHelper(self.mol)
-                    test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
+                test_angles = PreprocessHelper(self.mol)
+                test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
         if self.visu_raw and training_path is not None:
             # Plot the raw data if a training path is given
@@ -108,7 +106,7 @@ class Pipeline:
         if model_path is not None:
             # Choose the adequate class depending on the model extension
             if model_path.endswith(".pickle"):
-                class_cluster = SklearnClust
+                class_cluster = SklearnClust  # type: ignore
             elif model_path.endswith(".Rds"):
                 class_cluster = RClust  # type: ignore
             else:
@@ -116,8 +114,8 @@ class Pipeline:
 
         else:
             if method_name is not None:
-                if method_name == "mclust" or  method_name == "dbscan":
-                    class_cluster = RClust 
+                if method_name == "mclust" or method_name == "dbscan":
+                    class_cluster = RClust  # type: ignore
                 else:
                     class_cluster = SklearnClust  # type: ignore
             else:
@@ -125,11 +123,7 @@ class Pipeline:
 
         return class_cluster
 
-    def fit_data(
-        self,
-        method_name: Optional[str] = None,
-        model_path: Optional[str] = None
-    ):
+    def fit_data(self, method_name: Optional[str] = None, model_path: Optional[str] = None):
         """
         Train the model, fit the testing data and print the sequence
 
@@ -149,17 +143,12 @@ class Pipeline:
             params = {"method_name": method_name, "x_train": x_train}
             model_path = seq_process.train_model(**params)
 
-            if method_name == "hierarchical":
-                print(f"Warning: Predict not available for {method_name} method\n")
-                return
-            
         if self.testing_path is not None:
             if model_path.endswith(".pickle"):
-                for file in os.listdir(self.testing_path): 
+                for file in os.listdir(self.testing_path):
                     # Get the angle values to fit on the model
-                    x_test = get_angle(f"{self.tmp_dir}/{file[-8:-4]}_values.csv",
-                                    self.mol)
-                    
+                    x_test = get_angle(f"{self.tmp_dir}/{file[-8:-4]}_values.csv", self.mol)
+
                     # Fit the data and print the sequence
                     with open("list_seq.fasta", "a") as list_seq:
                         list_seq.write(f">{file[-8:-4]}\n")
@@ -180,7 +169,6 @@ class Pipeline:
         print("All sequences saved in list_seq.fasta")
 
     def main(self):
-
         self.preprocess_data(self.training_path, self.testing_path)
         self.fit_data(self.method_name, self.model_path)
 

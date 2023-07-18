@@ -1,4 +1,4 @@
-from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
+from sklearn.cluster import KMeans, MeanShift
 from sklearn.ensemble import IsolationForest
 from sklearn_som.som import SOM
 
@@ -26,19 +26,6 @@ class ParamModel:
         algorithm="lloyd",
     )
 
-    # AgglomerativeClustering():
-    Hierarchical = dict(
-        n_clusters=None,  # default = None if threshold not None
-        affinity="deprecated",
-        metric=None,
-        memory=None,
-        connectivity=None,
-        compute_full_tree="auto",
-        linkage="ward",
-        distance_threshold=2000,  # default = 2000
-        compute_distances=False,
-    )
-
     # IsolationForest():
     Outlier = dict(
         n_estimators=100,
@@ -60,7 +47,6 @@ class ParamModel:
 CONVERSION_NAME_TO_MODEL = {
     "mean_shift": {"class": MeanShift, "params": ParamModel.MeanShift},
     "kmeans": {"class": KMeans, "params": ParamModel.KMeans},
-    "hierarchical": {"class": AgglomerativeClustering, "params": ParamModel.Hierarchical},
     "outlier": {"class": IsolationForest, "params": ParamModel.Outlier},
     "som": {"class": SOM, "params": ParamModel.SOM},
 }

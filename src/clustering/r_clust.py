@@ -7,7 +7,7 @@ class RClust(ClusteringHelper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def train_model(self,*args, **kwargs) -> str:
+    def train_model(self, *args, **kwargs) -> str:
         """
         Execute a R script to train a model with the mclust package and save it
 
@@ -29,5 +29,6 @@ class RClust(ClusteringHelper):
             :param temp_dir: the path of the temporary directory
             :param model_path: the path to the saved model to use, in Rds format
         """
-        os.system(f"Rscript src/r_script/{self.method_name}.r {file_name} {self.temp_dir} {model_path}")
-        
+        os.system(
+            f"Rscript src/r_script/{self.method_name}.r {file_name} {self.temp_dir} {model_path}"
+        )
