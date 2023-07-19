@@ -107,6 +107,26 @@ def labels_to_seq(list_labels: list) -> str:
     return sequence
 
 
+def fasta_write(type_line: str, content: str):
+    """
+    Write in list_seq.fasta
+
+    Args:
+        :param type_line: the info to write, either file name or sequence
+        :param content: the string containing what is to be written
+    """
+    if type_line == "filename":
+        with open("list_seq.fasta", "a") as list_seq:
+            list_seq.write(f">{content}\n")
+
+    elif type_line == "seq":
+        with open("list_seq.fasta", "a") as list_seq:
+            list_seq.write(f"{content}\n")
+
+    else:
+        print("Error when writing in list_seq.fasta")
+
+
 def get_colors(nb_colors: int):
     """
     Return a list of random colors

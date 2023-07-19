@@ -17,7 +17,7 @@ class RClust(ClusteringHelper):
         Returns:
             :return the path where the model is saved in Rds format
         """
-        os.system(f"Rscript src/r_script/{self.method_name}.r train {self.temp_dir} {self.mol}")
+        os.system(f"Rscript src/r_script/{self.method_name}.r train {self.temp_dir} {self.mol}>/dev/null 2>&1")
 
         return f"models/{self.method_name}_{self.mol}_model.Rds"
 
@@ -30,5 +30,5 @@ class RClust(ClusteringHelper):
             :param model_path: the path to the saved model to use, in Rds format
         """
         os.system(
-            f"Rscript src/r_script/{self.method_name}.r {file_name} {self.temp_dir} {model_path}"
+            f"Rscript src/r_script/{self.method_name}.r {file_name} {self.temp_dir} {model_path}>/dev/null 2>&1"
         )

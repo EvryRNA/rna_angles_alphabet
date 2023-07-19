@@ -16,9 +16,15 @@ create_model <- function(dir, mol) {
     model_dbscan <- dbscan(train_data, eps = 8, minPts = 12, weights = NULL,
     borderPoints = TRUE)
 
+    #Save the model
     path_save_model <- paste("models/dbscan_", mol, "_model.Rds",
     sep = "")
     saveRDS(model_dbscan, path_save_model)
+
+    #Save the training data
+    path_save_data <- paste("models/dbscan_", mol, "_train_data.Rds",
+    sep = "")
+    saveRDS(train_data, path_save_data)
 
     #Save the cluster figure
     # Open png file
@@ -54,17 +60,17 @@ rank_model <- function(load_model) {
 
 
 # Predict the test labels
-predict_labels <- function(load_model, dir) {
-    path_train_data <- paste(dir, "train_values.csv", sep = "/")
-    train_data <- read.csv(file = path_train_data, colClasses = c("numeric",
-    "numeric", "NULL", "NULL", "NULL", "NULL"))
-    train_data <- na.omit(train_data)
+predict_labels <- function(load_model, dir, mol) {
+    path_save_data <- paste("models/dbscan_", mol, "_train_data.Rds",
+    sep = "")
+    train_data <- readRDS(path_save_data)
 
     path_test_data <- paste(dir, "test_values.csv", sep = "/")
     test_data <- read.csv(file = path_test_data)[, 1:2]
     test_data <- na.omit(test_data)
 
     test_labels <- predict(load_model, test_data, train_data)
+    test_labels
     return(test_labels)
 }
 
@@ -87,6 +93,6 @@ if (args[1] == "train") {
     load_model <- test_model(temp_dir, model_path)
     ranked_model_labels <- rank_model(load_model)
 
-    test_labels <- predict_labels(load_model, temp_dir)
+    test_labels <- predict_labels(load_model, temp_dir, mol)
     arrange_labels(test_labels, ranked_model_labels)
 }

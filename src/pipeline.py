@@ -6,7 +6,7 @@ from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
 from src.preprocessing.preprocess_helper import PreprocessHelper
 from src.utils.plot_helper import raw_data_plot
-from src.utils.utils import get_angle, setup_dir
+from src.utils.utils import get_angle, setup_dir, fasta_write
 
 
 class Pipeline:
@@ -55,6 +55,7 @@ class Pipeline:
         """
         training_path = self.training_path if training_path is None else training_path
         testing_path = self.testing_path if testing_path is None else testing_path
+        testing_path = testing_path if os.path.isdir(testing_path) else os.path.dirname(testing_path)
 
         # Setup the necessary directories
         setup_dir(self.tmp_dir)
@@ -69,14 +70,11 @@ class Pipeline:
 
             if testing_path is not None:
                 # Get the test values
-                if testing_path.endswith(".pdb"):
+                files = os.listdir(testing_path) if os.path.isdir(testing_path) else [os.path.basename(testing_path)]
+                
+                for file in files:
                     test_angles = PreprocessHelper(self.mol)
-                    test_angles.get_values(testing_path, self.tmp_dir)
-
-                else:
-                    for file in os.listdir(testing_path):
-                        test_angles = PreprocessHelper(self.mol)
-                        test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
+                    test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
         elif self.model_path is not None and testing_path is None:
             raise ValueError("No testing path given!")
@@ -144,32 +142,29 @@ class Pipeline:
             model_path = seq_process.train_model(**params)
 
         if self.testing_path is not None:
-            if model_path.endswith(".pickle"):
-                for file in os.listdir(self.testing_path):
+            files = os.listdir(self.testing_path) if os.path.isdir(self.testing_path) else [os.path.basename(self.testing_path)]
+
+            for file in files:
+                name = file.replace(".pdb", "")
+                fasta_write("filename", name)
+
+                if model_path.endswith(".pickle"):
                     # Get the angle values to fit on the model
-                    x_test = get_angle(f"{self.tmp_dir}/{file[-8:-4]}_values.csv", self.mol)
+                    x_test = get_angle(f"{self.tmp_dir}/{name}_values.csv", self.mol)
 
-                    # Fit the data and print the sequence
-                    with open("list_seq.fasta", "a") as list_seq:
-                        list_seq.write(f">{file[-8:-4]}\n")
+                    final_seq = seq_process.predict_seq(model_path, x_test)
+                    fasta_write("seq", final_seq)
 
-                        final_seq = seq_process.predict_seq(model_path, x_test)
-                        print(f"Sequence for {file[:-4]}:", final_seq)
-                        list_seq.write(f"{final_seq}\n")
-                print("All sequences saved in list_seq.fasta")
+                elif model_path.endswith(".Rds"):
+                    final_seq = seq_process.predict_seq(model_path, name)
 
-            elif model_path.endswith(".Rds"):
-                for file in os.listdir(self.testing_path):
-                    # Fit the data and print the sequence
-                    with open("list_seq.fasta", "a") as list_seq:
-                        list_seq.write(f">{file[-8:-4]}\n")
+                else:
+                    print("Model given is neither in pickle or Rds format")
+                    return
+                
+                print(f"Sequence for {name} done")
+            print("All sequences saved in list_seq.fasta")
 
-                    final_seq = seq_process.predict_seq(model_path, file[-8:-4])
-                    print(f"Sequence for {file[-8:-4]} saved")
-                print("All sequences saved in list_seq.fasta")
-
-            else:
-                print("Model given is neither in pickle or Rds format")
 
     def main(self):
         self.preprocess_data(self.training_path, self.testing_path)
@@ -190,7 +185,7 @@ class Pipeline:
             dest="testing_path",
             type=str,
             default=None,
-            help="The path to the directory with the testing data",
+            help="The path to the file or directory with the testing data",
         )
         parser.add_argument(
             "--tmp_dir",
