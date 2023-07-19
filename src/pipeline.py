@@ -156,6 +156,7 @@ class Pipeline:
                         final_seq = seq_process.predict_seq(model_path, x_test)
                         print(f"Sequence for {file[:-4]}:", final_seq)
                         list_seq.write(f"{final_seq}\n")
+                print("All sequences saved in list_seq.fasta")
 
             elif model_path.endswith(".Rds"):
                 for file in os.listdir(self.testing_path):
@@ -165,8 +166,10 @@ class Pipeline:
 
                     final_seq = seq_process.predict_seq(model_path, file[-8:-4])
                     print(f"Sequence for {file[-8:-4]} saved")
+                print("All sequences saved in list_seq.fasta")
 
-        print("All sequences saved in list_seq.fasta")
+            else:
+                print("Model given is neither in pickle or Rds format")
 
     def main(self):
         self.preprocess_data(self.training_path, self.testing_path)
