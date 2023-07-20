@@ -6,7 +6,7 @@ from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
 from src.preprocessing.preprocess_helper import PreprocessHelper
 from src.utils.plot_helper import raw_data_plot
-from src.utils.utils import get_angle, setup_dir, fasta_write
+from src.utils.utils import fasta_write, get_angle, setup_dir
 
 
 class Pipeline:
@@ -55,7 +55,9 @@ class Pipeline:
         """
         training_path = self.training_path if training_path is None else training_path
         testing_path = self.testing_path if testing_path is None else testing_path
-        testing_path = testing_path if os.path.isdir(testing_path) else os.path.dirname(testing_path)
+        testing_path = (
+            testing_path if os.path.isdir(testing_path) else os.path.dirname(testing_path)
+        )
 
         # Setup the necessary directories
         setup_dir(self.tmp_dir)
@@ -70,8 +72,12 @@ class Pipeline:
 
             if testing_path is not None:
                 # Get the test values
-                files = os.listdir(testing_path) if os.path.isdir(testing_path) else [os.path.basename(testing_path)]
-                
+                files = (
+                    os.listdir(testing_path)
+                    if os.path.isdir(testing_path)
+                    else [os.path.basename(testing_path)]
+                )
+
                 for file in files:
                     test_angles = PreprocessHelper(self.mol)
                     test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
@@ -142,7 +148,11 @@ class Pipeline:
             model_path = seq_process.train_model(**params)
 
         if self.testing_path is not None:
-            files = os.listdir(self.testing_path) if os.path.isdir(self.testing_path) else [os.path.basename(self.testing_path)]
+            files = (
+                os.listdir(self.testing_path)
+                if os.path.isdir(self.testing_path)
+                else [os.path.basename(self.testing_path)]
+            )
 
             for file in files:
                 name = file.replace(".pdb", "")
@@ -161,10 +171,9 @@ class Pipeline:
                 else:
                     print("Model given is neither in pickle or Rds format")
                     return
-                
+
                 print(f"Sequence for {name} done")
             print("All sequences saved in list_seq.fasta")
-
 
     def main(self):
         self.preprocess_data(self.training_path, self.testing_path)
