@@ -10,7 +10,7 @@ temp_dir <- args[2]
 create_model <- function(dir, mol) {
     path_train_data <- paste(dir, "train_values.csv", sep = "/")
     train_data <- read.csv(file = path_train_data, colClasses = c("numeric",
-    "numeric", "NULL", "NULL", "NULL"))
+    "numeric", "NULL", "NULL", "NULL", "NULL"))
     train_data <- na.omit(train_data)
 
     # Mclust method with all parameters
@@ -42,7 +42,6 @@ save_png <- function(dir, mol) {
 # Load the model
 test_model <- function(dir, model_path) {
     load_model <- readRDS(model_path)
-    print(summary(load_model))
     return(load_model)
 }
 
@@ -56,8 +55,8 @@ rank_model <- function(load_model) {
 
 
 # Predict the test labels
-predict_labels <- function(load_model, dir) {
-    path_test_data <- paste(dir, "test_values.csv", sep = "/")
+predict_labels <- function(load_model, dir, file_name) {
+    path_test_data <- paste(dir, "/", file_name, "_values.csv", sep = "")
 
     test_data <- read.csv(file = path_test_data)[, 1:2]
     test_data <- na.omit(test_data)
@@ -72,9 +71,9 @@ arrange_labels <- function(test_labels, ranked_model_labels) {
     sequence <- ""
     for (i in 1:length(test_labels)) { # nolint: seq_linter.
         test_labels[i] <- grep(test_labels[i], ranked_model_labels)
-        sequence <- paste(sequence, LETTERS[test_labels[i]])
+        sequence <- paste(sequence, LETTERS[test_labels[i]], sep = "")
     }
-    print(sequence)
+    cat(sequence, file = "list_seq.fasta", sep = "\n", append = TRUE)
 }
 
 
@@ -82,11 +81,12 @@ if (args[1] == "train") {
     mol <- args[3]
     create_model(temp_dir, mol)
     save_png(temp_dir, mol)
-} else if (args[1] == "test") {
+} else if (args[1] != "train") {
+    file_name <- args[1]
     model_path <- args[3]
     load_model <- test_model(temp_dir, model_path)
     ranked_model_labels <- rank_model(load_model)
 
-    test_labels <- predict_labels(load_model, temp_dir)
+    test_labels <- predict_labels(load_model, temp_dir, file_name)
     arrange_labels(test_labels, ranked_model_labels)
 }

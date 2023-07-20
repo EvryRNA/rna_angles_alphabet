@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.utils import get_angle, get_colors
+from src.utils.utils import get_angle, get_colors
 
 
 def raw_data_plot(path: str, mol: str):
@@ -35,6 +35,11 @@ def raw_data_plot(path: str, mol: str):
     plt.axis([0, 360, 0, 360])
     plt.xticks(np.arange(0, 361, 36))
     plt.yticks(np.arange(0, 361, 36))
+    plt.axhline(y=180, color="r", linestyle="--", label="Helical region")
+    plt.axhline(y=252, color="r", linestyle="--")
+    plt.axvline(x=144, color="r", linestyle="--")
+    plt.axvline(x=198, color="r", linestyle="--")
+    plt.legend(loc="upper left")
     plt.savefig(f"figures_clust/raw_{mol}_data.png")
 
     print(f"\nRaw data saved in figures_clust/raw_{mol}_data.png\n")

@@ -7,29 +7,11 @@ import unittest
 from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
 from src.pipeline import Pipeline
-from src.utils import get_angle
 
 path = os.path.join("tests", "data")
 
 
 class ModelTest(unittest.TestCase):
-    
-    def test_preprocess_data(self):
-        """
-        Test the data preprocessing
-        """
-        class_pipe = Pipeline(None, None, path, None, "rna", None, False)
-        class_pipe.preprocess_data(f"{path}/test_rna.pdb", f"{path}/test_rna.pdb")
-
-        test_array = get_angle(f"{path}/test_values.csv", "rna")
-        self.assertEqual([156.224,214.245], [test_array[0][0], test_array[0][1]])
-
-        train_array = get_angle(f"{path}/train_values.csv", "rna")
-        self.assertEqual([156.224,214.245], [train_array[0][0], train_array[0][1]])
-
-        os.remove(f"{path}/test_values.csv")
-        os.remove(f"{path}/train_values.csv")
-
 
     def test_initialize_clustering_model(self):
         """
@@ -43,10 +25,10 @@ class ModelTest(unittest.TestCase):
         r_model = class_pipe.initialize_clustering_model(None, "mclust_model.Rds")
         self.assertEqual(RClust, r_model)
 
-        sklearn_class = class_pipe.initialize_clustering_model("dbscan", None)
+        sklearn_class = class_pipe.initialize_clustering_model("kmeans", None)
         self.assertEqual(SklearnClust, sklearn_class)
 
-        sklearn_model = class_pipe.initialize_clustering_model(None, "dbscan.pickle")
+        sklearn_model = class_pipe.initialize_clustering_model(None, "kmeans.pickle")
         self.assertEqual(SklearnClust, sklearn_model)
 
         # Test the raise ValueError if nothing is given

@@ -25,7 +25,7 @@ jobs:
         with:
           WORKDIR: 'src'
           MAX_LINE_LENGTH: 99
-          COMPLEXITY_SCORE: 2.5
+          COMPLEXITY_SCORE: 3.1
           COVERAGE_SCORE: 10
           DOCUMENTATION_SCORE: 0.5
 

@@ -1,20 +1,9 @@
-from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans, MeanShift
+from sklearn.cluster import KMeans, MeanShift
 from sklearn.ensemble import IsolationForest
 from sklearn_som.som import SOM
 
 
 class ParamModel:
-    DBSCAN = dict(
-        eps=8,  # default = 8
-        min_samples=12,  # default = 12
-        metric="euclidean",
-        metric_params=None,
-        algorithm="auto",
-        leaf_size=30,
-        p=None,
-        n_jobs=None,
-    )
-
     MeanShift = dict(
         bandwidth=None,  # default = None
         seeds=None,
@@ -26,7 +15,7 @@ class ParamModel:
     )
 
     KMeans = dict(
-        n_clusters=8,  # default = 8
+        n_clusters=8,  # default = 16
         init="k-means++",
         n_init="auto",
         max_iter=300,
@@ -35,19 +24,6 @@ class ParamModel:
         random_state=None,
         copy_x=True,
         algorithm="lloyd",
-    )
-
-    # AgglomerativeClustering():
-    Hierarchical = dict(
-        n_clusters=None,  # default = None if threshold not None
-        affinity="deprecated",
-        metric=None,
-        memory=None,
-        connectivity=None,
-        compute_full_tree="auto",
-        linkage="ward",
-        distance_threshold=2000,  # default = 2000
-        compute_distances=False,
     )
 
     # IsolationForest():
@@ -63,16 +39,14 @@ class ParamModel:
         warm_start=False,
     )
 
-    SOM = dict(m=2, n=5, dim=2, lr=1)  # default => m = 2, n = 5
+    SOM = dict(m=4, n=4, dim=2, lr=1, max_iter=300)
     # Other options: sigma, max_iter, random_state
 
 
 # Dictionary used to find the right function and parameters for each method
 CONVERSION_NAME_TO_MODEL = {
-    "dbscan": {"class": DBSCAN, "params": ParamModel.DBSCAN},
     "mean_shift": {"class": MeanShift, "params": ParamModel.MeanShift},
     "kmeans": {"class": KMeans, "params": ParamModel.KMeans},
-    "hierarchical": {"class": AgglomerativeClustering, "params": ParamModel.Hierarchical},
     "outlier": {"class": IsolationForest, "params": ParamModel.Outlier},
     "som": {"class": SOM, "params": ParamModel.SOM},
 }

@@ -1,12 +1,12 @@
 import argparse
-from typing import Any, Optional
+import os
+from typing import Optional
 
 from src.clustering.r_clust import RClust
 from src.clustering.sklearn_clust import SklearnClust
-from src.plot_helper import raw_data_plot
-from src.preprocessing.protein_prep import ProteinPrep
-from src.preprocessing.rna_prep import RNAPrep
-from src.utils import get_angle, setup_dir
+from src.preprocessing.preprocess_helper import PreprocessHelper
+from src.utils.plot_helper import raw_data_plot
+from src.utils.utils import fasta_write, get_angle, setup_dir
 
 
 class Pipeline:
@@ -16,8 +16,8 @@ class Pipeline:
     Attributes:
         training_path: The path to the directory with the training data
         testing_path: The path to the directory with the testing data
-        temp_dir: The path to the directory used for temporary files
-        method_name: The custering method to use
+        tmp_dir: The path to the directory used for temporary files
+        method_name: The clustering method to use
         mol: The type of biomolecule to process, protein or RNA
         model_path: The path to an existing model in pickle or Rds format
         visu_raw: Plot the raw data if True, requires a training path
@@ -27,7 +27,7 @@ class Pipeline:
         self,
         training_path: str,
         testing_path: str,
-        temp_dir: str,
+        tmp_dir: str,
         method_name: str,
         mol: str,
         model_path: str,
@@ -35,16 +35,14 @@ class Pipeline:
     ):
         self.training_path = training_path
         self.testing_path = testing_path
-        self.temp_dir = temp_dir
+        self.tmp_dir = tmp_dir
         self.method_name = method_name
         self.mol = mol
         self.model_path = model_path
         self.visu_raw = visu_raw
 
     def preprocess_data(
-        self,
-        training_path: Optional[str] = None,
-        testing_path: Optional[str] = None,
+        self, training_path: Optional[str] = None, testing_path: Optional[str] = None
     ):
         """
         Get the angles values of a dataset in a csv
@@ -52,40 +50,50 @@ class Pipeline:
         Args:
             :param training_path: the path of the training data
             :param testing_path: the path of the testing data
+            :param training_done: check if the training is already done
+            :param training_done: check if the raw data plot is already done
         """
         training_path = self.training_path if training_path is None else training_path
         testing_path = self.testing_path if testing_path is None else testing_path
+        testing_path = (
+            testing_path if os.path.isdir(testing_path) else os.path.dirname(testing_path)
+        )
 
         # Setup the necessary directories
-        setup_dir(self.temp_dir)
-
-        # Initialize the class depending on the type of molecule
-        class_molecule = RNAPrep if self.mol == "rna" else ProteinPrep
+        setup_dir(self.tmp_dir)
 
         if self.model_path is None:
             if training_path is None:
                 raise ValueError("No training nor model path given!")
             else:
                 # Get the train values
-                train_angles = class_molecule()
-                train_angles.get_values(training_path, "train", self.temp_dir)
+                train_angles = PreprocessHelper(self.mol)
+                train_angles.get_values(training_path, self.tmp_dir)
 
-                if testing_path is not None:
-                    # Get the test values
-                    test_angles = class_molecule()
-                    test_angles.get_values(testing_path, "test", self.temp_dir)
+            if testing_path is not None:
+                # Get the test values
+                files = (
+                    os.listdir(testing_path)
+                    if os.path.isdir(testing_path)
+                    else [os.path.basename(testing_path)]
+                )
+
+                for file in files:
+                    test_angles = PreprocessHelper(self.mol)
+                    test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
         elif self.model_path is not None and testing_path is None:
             raise ValueError("No testing path given!")
 
         else:
             # Get the test values
-            test_angles = class_molecule()
-            test_angles.get_values(testing_path, "test", self.temp_dir)
+            for file in os.listdir(testing_path):
+                test_angles = PreprocessHelper(self.mol)
+                test_angles.get_values(f"{testing_path}/{file}", self.tmp_dir)
 
         if self.visu_raw and training_path is not None:
             # Plot the raw data if a training path is given
-            raw_data_plot(f"{self.temp_dir}/train_values.csv", self.mol)
+            raw_data_plot(f"{self.tmp_dir}/train_values.csv", self.mol)
 
     def initialize_clustering_model(
         self, method_name: Optional[str] = None, model_path: Optional[str] = None
@@ -99,20 +107,21 @@ class Pipeline:
         Returns:
             :return the class of the clustering model
         """
-        class_cluster = Any
-
         if model_path is not None:
             # Choose the adequate class depending on the model extension
             if model_path.endswith(".pickle"):
-                class_cluster = SklearnClust
+                class_cluster = SklearnClust  # type: ignore
             elif model_path.endswith(".Rds"):
-                class_cluster = RClust
+                class_cluster = RClust  # type: ignore
             else:
                 raise ValueError("When giving a model, use a .pickle or .Rds format!")
 
         else:
             if method_name is not None:
-                class_cluster = RClust if method_name == "mclust" else SklearnClust
+                if method_name == "mclust" or method_name == "dbscan":
+                    class_cluster = RClust  # type: ignore
+                else:
+                    class_cluster = SklearnClust  # type: ignore
             else:
                 raise ValueError("No model path nor method name given!")
 
@@ -128,26 +137,43 @@ class Pipeline:
         """
         # Get the adequate class
         class_cluster = self.initialize_clustering_model(method_name, model_path)
-        seq_process = class_cluster(self.temp_dir, self.mol)
+        seq_process = class_cluster(self.tmp_dir, self.mol, self.method_name)
 
         if model_path is None:
             # Get the angle values
-            x_train = get_angle(f"{self.temp_dir}/train_values.csv", self.mol)
+            x_train = get_angle(f"{self.tmp_dir}/train_values.csv", self.mol)
 
             # Train the model
             params = {"method_name": method_name, "x_train": x_train}
             model_path = seq_process.train_model(**params)
 
-            if method_name == "dbscan" or method_name == "hierarchical":
-                print(f"Warning: Predict is not available yet for {method_name} method\n")
-                return
-
         if self.testing_path is not None:
-            # Get the angle values to fit on the model
-            x_test = get_angle(f"{self.temp_dir}/test_values.csv", self.mol)
+            files = (
+                os.listdir(self.testing_path)
+                if os.path.isdir(self.testing_path)
+                else [os.path.basename(self.testing_path)]
+            )
 
-            # Fit the data and print the sequence
-            seq_process.predict_seq(model_path, x_test)
+            for file in files:
+                name = file.replace(".pdb", "")
+                fasta_write("filename", name)
+
+                if model_path.endswith(".pickle"):
+                    # Get the angle values to fit on the model
+                    x_test = get_angle(f"{self.tmp_dir}/{name}_values.csv", self.mol)
+
+                    final_seq = seq_process.predict_seq(model_path, x_test)
+                    fasta_write("seq", final_seq)
+
+                elif model_path.endswith(".Rds"):
+                    final_seq = seq_process.predict_seq(model_path, name)
+
+                else:
+                    print("Model given is neither in pickle or Rds format")
+                    return
+
+                print(f"Sequence for {name} done")
+            print("All sequences saved in list_seq.fasta")
 
     def main(self):
         self.preprocess_data(self.training_path, self.testing_path)
@@ -168,11 +194,11 @@ class Pipeline:
             dest="testing_path",
             type=str,
             default=None,
-            help="The path to the directory with the testing data",
+            help="The path to the file or directory with the testing data",
         )
         parser.add_argument(
-            "--temp_dir",
-            dest="temp_dir",
+            "--tmp_dir",
+            dest="tmp_dir",
             type=str,
             default="tmp",
             help="The path to the directory used for temporary files",
